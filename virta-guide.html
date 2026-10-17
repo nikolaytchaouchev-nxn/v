@@ -1,127 +1,157 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Virta Guide Prototype</title>
-<!-- Virta Guide, Phase 1 enrollment prototype for the UPS x Virta case study. Edit freely: screens are defined in the SC object in the script below; go(id) navigates. -->
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Virta Guide, Phase 1 enrollment prototype for the UPS x Virta case study. Edit freely: screens are defined in the SC object in the script below; go(id) navigates. Brand weight per screen lives in BRAND (ups → mix → virta). -->
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+/* Brand weight shifts across the flow: .screen[data-brand] is ups → mix → virta.
+   Everything themed reads --care / --care-deep / --care-soft, so a screen only picks its stage. */
 :root{
   color-scheme:light;
-  --care:#1450F5; --care-deep:#0B33A8; --care-soft:#EAF0FF;
-  --ink:#0D1A33; --ink-2:#56617A; --ink-3:#8A93A8;
-  --line:#E4E8F0; --fill:#F3F5F9; --page:#E9EDF4; --white:#fff;
-  --umber:#3B2418; --gold:#F5B21B; --umber-soft:#FFF7E6;
+  --blue:#005EE7; --blue-deep:#0046B8; --blue-soft:#E8F0FF; --night:#071331;
+  --brown:#351C0B; --brown-2:#4A2A14; --gold:#FAB80A; --gold-soft:#FFF5D9; --sand:#F7F1E8;
+  --ink:#0B1530; --ink-2:#56617A; --ink-3:#8A93A8;
+  --line:#E3E7EF; --fill:#F2F4F8; --page:#E9EDF4; --white:#fff;
   --go:#1F8A5B; --go-soft:#E5F5EC; --wait:#A86400; --wait-soft:#FFF3DE;
   --plum:#5B2BC4; --plum-soft:#F2EBFF; --err:#C2410C;
+  --care:var(--blue); --care-deep:var(--blue-deep); --care-soft:var(--blue-soft); --gs-ink:#fff;
 }
+.screen[data-brand=ups]{--care:var(--brown); --care-deep:var(--brown); --care-soft:var(--gold-soft); --gs-ink:var(--gold)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Figtree,system-ui,sans-serif;color:var(--ink);background:var(--page);line-height:1.45}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:10px}
+svg.lg{display:block;flex:none}
 
 .stage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 16px}
 .device{width:390px;height:844px;background:#0E1424;border-radius:56px;padding:12px;box-shadow:0 40px 90px -40px rgba(13,26,51,.6)}
-.screen{position:relative;width:100%;height:100%;background:var(--white);border-radius:44px;overflow:hidden;overflow:clip;display:flex;flex-direction:column}
-.statusbar{height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font-size:14px;font-weight:700}
+.screen{position:relative;width:100%;height:100%;background:var(--white);border-radius:44px;overflow:hidden;overflow:clip;display:flex;flex-direction:column;transition:background .3s}
+.statusbar{height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font-size:14px;font-weight:700;transition:background .3s,color .3s}
 .statusbar i{width:112px;height:31px;background:#0E1424;border-radius:20px;display:block}
+.screen[data-page=landing]{background:#2A1507}
+.screen[data-page=landing] .statusbar{background:#2A1507;color:#fff}
+.screen[data-page=phone] .statusbar,.screen[data-page=booked] .statusbar{background:var(--blue);color:#fff}
 .restart{font-size:13px;font-weight:600;color:var(--ink-2);border:1px solid #CDD4E1;border-radius:999px;padding:7px 14px;background:#fff}
 #app{flex:1;display:flex;flex-direction:column;min-height:0}
 
-/* header: back · section + progress · help */
-.hdr{flex:none;display:grid;grid-template-columns:44px 1fr 64px;align-items:center;padding:4px 16px 10px;min-height:54px}
-.hdr .back{width:40px;height:40px;border-radius:50%;background:var(--fill);display:grid;place-items:center}
-.hdr .back svg{width:18px;height:18px}
-.hdr .back[hidden]{visibility:hidden;display:grid}
-.hdr .mid{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
-.sec{font-size:13.5px;font-weight:700}
-.dots{display:flex;gap:4px}
-.dots span{width:7px;height:4px;border-radius:4px;background:var(--line);transition:all .3s}
-.dots span.done{background:var(--care)}
-.dots span.on{width:22px;background:var(--care)}
-.help{justify-self:end;font-size:14px;font-weight:600;padding:8px 2px}
+/* brand band: the strip that carries the brand weight for each stage */
+.band{flex:none;display:flex;align-items:center;gap:8px;padding:8px 18px;font-size:12px;font-weight:700}
+.band .r{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.band.ups{background:var(--brown);color:#fff}
+.band.ups b{color:var(--gold)}
+.band.ups .r{color:#D9C3A6}
+.band.mix{background:var(--sand);color:var(--brown)}
+.band.mix .x{color:var(--ink-3);font-weight:600}
+.band.mix .vw{display:inline-flex;align-items:center;gap:4px;color:var(--blue)}
+.band.mix .r{color:#7A6450}
+.band.virta{background:var(--blue-soft);color:var(--blue)}
+.band.virta .r{color:var(--blue-deep)}
 
-.brandrow{display:flex;align-items:center;gap:6px}
-.logo{border:1.5px dashed currentColor;border-radius:6px;font-size:10px;font-weight:700;padding:5px 7px;line-height:1;white-space:nowrap}
-.logo.ups{color:var(--umber);background:var(--umber-soft)}
-.logo.virta{color:var(--care)}
-.x{font-size:11px;color:var(--ink-3)}
-.chip-ups{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--umber);background:var(--umber-soft);border-radius:999px;padding:5px 11px}
-.chip-ups::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold)}
+/* header: back · step + progress · help */
+.hdr{flex:none;display:grid;grid-template-columns:40px 1fr 52px;align-items:center;padding:10px 16px 0}
+.hdr .back{width:38px;height:38px;border-radius:12px;background:var(--fill);display:grid;place-items:center}
+.hdr .back svg{width:16px;height:16px}
+.hdr .back[hidden]{visibility:hidden;display:grid!important}
+.hdr .mid{text-align:center;display:flex;justify-content:center;align-items:center;gap:6px;color:var(--blue)}
+.sec{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.bar{flex:none;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:12px 18px 0}
+.bar i{height:5px;border-radius:5px;background:var(--line);transition:background .3s}
+.bar i.done{background:var(--care)}
+.bar i.on{background:linear-gradient(90deg,var(--care) 45%,var(--line) 45%)}
+.help{justify-self:end;font-size:14px;font-weight:800;padding:8px 2px;color:var(--care)}
 
-.content{flex:1;overflow-y:auto;padding:8px 24px 16px;scrollbar-width:none}
+.content{flex:1;overflow-y:auto;padding:8px 22px 16px;scrollbar-width:none}
 .content::-webkit-scrollbar{display:none}
-.dock{flex:none;padding:12px 20px 26px;display:flex;flex-direction:column;gap:10px}
+.dock{flex:none;padding:12px 18px 24px;display:flex;flex-direction:column;gap:8px;counter-reset:o}
 
 /* Guide message: speaker + question on top, answers docked in the thumb zone */
-.gm{display:flex;flex-direction:column;gap:10px}
-.speaker{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--care-deep)}
-.orb{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#9DB6FF,var(--care) 58%,var(--care-deep));box-shadow:0 0 0 4px var(--care-soft);flex:none}
-.say{font-size:26px;line-height:1.18;font-weight:700;letter-spacing:-.018em}
-.say.xl{font-size:31px;font-weight:800;letter-spacing:-.025em;line-height:1.1}
-.lead{font-size:16px;color:var(--ink-2)}
-.ask{font-size:16px;font-weight:600;margin-top:2px}
-.why{align-self:flex-start;font-size:14px;font-weight:600;color:var(--care);display:inline-flex;align-items:center;gap:6px;padding:2px 0}
-.why::before{content:"?";width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:11px;font-weight:800}
+.gm{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.speaker{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;color:var(--care)}
+.gs{width:34px;height:34px;border-radius:11px;background:var(--care);color:var(--gs-ink);display:grid;place-items:center;flex:none;transition:background .3s}
+.say{font-size:29px;line-height:1.06;font-weight:900;letter-spacing:-.03em}
+.say.xl{font-size:38px;line-height:1;letter-spacing:-.035em}
+.lead{font-size:15.5px;color:var(--ink-2)}
+.ask{font-size:16px;font-weight:700;margin-top:2px}
+.why{align-self:flex-start;font-size:13px;font-weight:700;background:var(--fill);border-radius:999px;padding:7px 12px}
 
-.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--fill);border:1.5px solid transparent;border-radius:16px;padding:16px;font-size:16px;font-weight:600;transition:background .15s,border-color .15s}
-.opt:hover{background:#ECEFF5}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--fill);border:2px solid transparent;border-radius:16px;padding:14px;font-size:16px;font-weight:800;transition:background .15s,border-color .15s}
+.opt:hover{background:#EAEDF3}
 .opt .lbl{flex:1}
-.opt small{display:block;font-weight:500;font-size:13px;color:var(--ink-2);margin-top:2px}
-.opt.sel{background:var(--care-soft);border-color:var(--care)}
-.box{width:22px;height:22px;border-radius:7px;border:2px solid #C6CEDD;background:#fff;flex:none}
+.opt small{display:block;font-weight:600;font-size:12.5px;color:var(--ink-2);margin-top:1px}
+.opt.sel{background:#fff;border-color:var(--care)}
+.dock .opt[data-a]::before{counter-increment:o;content:counter(o);width:30px;height:30px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--ink-2);flex:none}
+.dock .opt.sel[data-a]::before{background:var(--care);color:#fff}
+.box{width:24px;height:24px;border-radius:8px;border:2px solid #C6CEDD;background:#fff;flex:none}
 .sel>.box{border-color:var(--care);background:var(--care) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E") no-repeat center/14px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid2 .opt{justify-content:center;text-align:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .hint{font-size:13.5px;color:var(--ink-2)}
 
-.btn{display:block;width:100%;border-radius:16px;padding:17px;font-size:16.5px;font-weight:700;text-align:center}
-.btn.primary{background:var(--care);color:#fff}
-.btn.primary:disabled{background:#C9D5F5;cursor:not-allowed}
+.btn{display:block;width:100%;border-radius:18px;padding:17px 20px;font-size:17px;font-weight:800;text-align:center}
+.btn.primary{display:flex;align-items:center;justify-content:space-between;text-align:left;background:var(--care);color:#fff;transition:background .3s}
+.btn.primary::after{content:"";width:30px;height:30px;border-radius:10px;flex:none;background:rgba(255,255,255,.18) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7.5 4l6 6-6 6' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/14px}
+.btn.primary:disabled{background:#D3D9E4;cursor:not-allowed}
+.btn.gold{background:var(--gold);color:var(--brown)}
+.btn.gold::after{background:rgba(53,28,11,.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7.5 4l6 6-6 6' fill='none' stroke='%23351C0B' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/14px}
 .btn.dark{background:var(--ink);color:#fff}
-.btn.quiet{color:var(--care);padding:10px}
-.fine{font-size:13px;color:var(--ink-2);text-align:center}
+.btn.quiet{color:var(--care);padding:10px;font-size:15.5px;font-weight:700}
+.fine{font-size:12.5px;color:var(--ink-2);text-align:center}
 
 .fields{display:flex;flex-direction:column;gap:10px;margin-top:20px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fbox{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:9px 14px}
+.fbox{background:#fff;border:2px solid var(--line);border-radius:16px;padding:9px 14px}
 .fbox:focus-within{border-color:var(--care);box-shadow:0 0 0 3px var(--care-soft)}
-.fbox label{display:block;font-size:12px;font-weight:600;color:var(--ink-2)}
-.fbox input,.fbox select{width:100%;border:0;outline:0;background:transparent;font-size:17px;font-weight:600;padding-top:2px;appearance:none}
+.fbox label{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.fbox input,.fbox select{width:100%;border:0;outline:0;background:transparent;font-size:18px;font-weight:800;padding-top:2px;appearance:none}
 .fbox.err{border-color:var(--err);background:#FFF8F4}
-.check{display:flex;gap:12px;align-items:center;font-size:15px;text-align:left;margin-top:6px;width:100%}
-.inl{color:var(--care);font-weight:600;font-size:inherit;padding:0}
+.check{display:flex;gap:12px;align-items:center;font-size:15px;font-weight:600;text-align:left;margin-top:6px;width:100%}
+.inl{color:var(--care);font-weight:700;font-size:inherit;padding:0}
 
-/* landing */
-.endorse{flex:none;background:var(--umber);color:#fff;font-size:12.5px;font-weight:600;padding:9px 24px;display:flex;gap:8px;align-items:center}
-.endorse::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
-.land-top{display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px}
-.hero{height:172px;border-radius:24px;margin:8px 0 20px;position:relative;overflow:hidden;background:
- radial-gradient(84px 84px at 72% 44%, #F0C49C 0 42%, transparent 43%),
- radial-gradient(160px 110px at 70% 120%, #2D3E6E 0 60%, transparent 61%),
- linear-gradient(160deg,#D5E0FF,#A5BBF7)}
-.hero span{position:absolute;left:12px;bottom:12px;font-size:11px;background:rgba(255,255,255,.92);border-radius:8px;padding:3px 8px;color:var(--ink-2)}
-.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
-.trust div{background:var(--fill);border-radius:14px;padding:12px 10px;font-size:13px;font-weight:600;line-height:1.25}
-.trust b{display:block;font-size:17px;color:var(--care-deep);margin-bottom:2px}
+/* landing: UPS-led */
+.land{flex:1;display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden;color:#fff;background:radial-gradient(120% 70% at 85% 8%,#5A3416 0,rgba(90,52,22,0) 60%),linear-gradient(180deg,#2A1507,#1E0F05)}
+.land .sunglow{position:absolute;right:-120px;top:-110px;width:340px;height:340px;color:var(--gold);opacity:.95;filter:drop-shadow(0 0 36px rgba(250,184,10,.45))}
+.land .halo{position:absolute;right:-50px;top:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,226,150,.55),rgba(255,226,150,0) 70%)}
+.land-top{position:relative;display:flex;justify-content:space-between;align-items:center;padding:8px 22px 0}
+.land-top .ups{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;line-height:1.2;color:#E9D6BD}
+.land-top .ups b{display:block;font-size:15px;color:#fff;font-weight:800}
+.land .help{color:#fff}
+.land .content{position:relative;padding-top:0;display:flex;flex-direction:column}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:150px}
+.land h1{margin-top:10px}
+.land h1 em{font-style:normal;color:var(--gold)}
+.land .lead{color:#D9C8B3;margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:20px;border-top:1px solid rgba(255,255,255,.14)}
+.stats div{padding:12px 0 0;font-size:11.5px;color:#CDB89E;font-weight:600;line-height:1.3}
+.stats b{display:block;font-size:22px;color:#fff;font-weight:900;letter-spacing:-.02em}
+.partner{display:flex;align-items:center;gap:8px;margin-top:22px;font-size:12px;font-weight:700;color:#CDB89E}
+.partner span{display:inline-flex;align-items:center;gap:5px;color:#fff}
+.land .dock{position:relative}
+.land .fine{color:#BFA88D}
 .links{display:flex;justify-content:center;gap:22px}
-.links button{font-size:14.5px;font-weight:600;color:var(--care)}
+.links button{font-size:14px;font-weight:700;color:#fff}
 
 /* states */
-.art{width:72px;height:72px;border-radius:24px;display:grid;place-items:center;margin:14px 0 22px}
+.art{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;margin:14px 0 20px}
 .art svg{width:36px;height:36px}
 .art.go{background:var(--go-soft);color:var(--go)}
 .art.wait{background:var(--wait-soft);color:var(--wait)}
 .art.plum{background:var(--plum-soft);color:var(--plum)}
 .art.care{background:var(--care-soft);color:var(--care)}
-.art.ups{background:var(--umber-soft);color:var(--umber)}
-.pill{display:inline-flex;font-size:13px;font-weight:700;border-radius:999px;padding:5px 11px;margin-bottom:12px;background:var(--go-soft);color:var(--go)}
+.art.shield{background:var(--brown)}
+.art.shield svg{width:32px;height:38px}
+.pill{display:inline-flex;align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:6px 11px;margin-bottom:12px;background:var(--go-soft);color:var(--go)}
+.pair{display:flex;align-items:center;gap:12px;margin:12px 0 20px}
+.pair .t{width:58px;height:58px;border-radius:18px;display:grid;place-items:center}
+.pair .t.u{background:var(--brown)}
+.pair .t.v{background:var(--blue);color:#fff}
+.pair .plus{width:24px;height:24px;border-radius:50%;background:var(--fill);display:grid;place-items:center;color:var(--ink-2)}
 .rows{display:flex;flex-direction:column;gap:18px;margin-top:24px}
 .rows .r{display:grid;grid-template-columns:40px 1fr;gap:14px}
 .rows .ic{width:40px;height:40px;border-radius:12px;background:var(--fill);display:grid;place-items:center;color:var(--care-deep)}
 .rows .ic svg{width:20px;height:20px}
-.rows b{display:block;font-size:15.5px}
+.rows b{display:block;font-size:15.5px;font-weight:800}
 .rows span{font-size:14px;color:var(--ink-2)}
 .steps{list-style:none;margin-top:24px}
-.steps li{position:relative;padding:0 0 20px 32px;font-size:15.5px;font-weight:700}
+.steps li{position:relative;padding:0 0 20px 32px;font-size:15.5px;font-weight:800}
 .steps li small{display:block;font-weight:500;color:var(--ink-2);font-size:14px}
 .steps li::before{content:"";position:absolute;left:4px;top:5px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--line)}
 .steps li::after{content:"";position:absolute;left:9.5px;top:21px;bottom:3px;width:1.5px;background:var(--line)}
@@ -129,73 +159,94 @@ button{cursor:pointer;background:none;border:0}
 .steps li.done::before{background:var(--go);box-shadow:0 0 0 2px var(--go)}
 .steps li.now::before{background:var(--care);box-shadow:0 0 0 2px var(--care),0 0 0 6px var(--care-soft)}
 .card{background:var(--fill);border-radius:18px;padding:16px;margin-top:16px}
-.card h3{font-size:15.5px;margin-bottom:3px}
+.card h3{font-size:15.5px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px}
 .card p{font-size:14px;color:var(--ink-2)}
-.outline{border:1.5px solid var(--line);background:#fff}
+.outline{border:2px solid var(--line);background:#fff}
+.card.upsb{background:var(--sand)}
+.card.upsb h3{color:var(--brown)}
+
+/* blue hero: coverage confirmed and booked */
+.bhero{flex:none;background:linear-gradient(180deg,var(--blue) 0%,#0049C2 100%);color:#fff;padding:0 22px 24px;position:relative;overflow:hidden;text-align:center}
+.bhero .rays{position:absolute;left:50%;top:0;width:400px;height:400px;margin-left:-200px;color:rgba(255,255,255,.08)}
+.bhero .top{position:relative;display:flex;justify-content:space-between;align-items:center;padding-top:6px}
+.bhero .top .back{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.16);display:grid;place-items:center}
+.bhero .top .back svg{width:16px;height:16px}
+.bhero .top .back[hidden]{visibility:hidden;display:grid!important}
+.bhero .help{color:#fff}
+.bhero .pair{position:relative;justify-content:center;margin:10px 0 0}
+.bhero .pair .t.v{background:#fff;color:var(--blue)}
+.bhero .pair .plus{background:rgba(255,255,255,.2);color:#fff}
+.bhero .art{position:relative;margin:10px auto 0;background:#fff;color:var(--go)}
+.bhero h1{position:relative;margin-top:18px}
+.bhero p{position:relative;color:#D5E3FF;font-size:14.5px;margin-top:8px}
+.badge{position:relative;display:inline-flex;gap:7px;align-items:center;background:var(--brown);color:#fff;border-radius:999px;padding:6px 12px 6px 7px;font-size:12.5px;font-weight:800;margin-top:14px}
+.badge.wait{background:rgba(255,255,255,.18)}
 
 .loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 40px;text-align:center}
 .spin{width:54px;height:54px;border-radius:50%;border:4px solid var(--care-soft);border-top-color:var(--care);animation:sp .9s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.loading p{font-size:18px;font-weight:700}
-.loading small{font-size:14px;color:var(--ink-2);display:block;margin-top:4px;font-weight:500}
+.loading p{font-size:19px;font-weight:900;letter-spacing:-.01em}
+.loading small{font-size:14px;color:var(--ink-2);display:block;margin-top:4px;font-weight:500;letter-spacing:0}
+.loading .pair{margin:0}
 
-.idcard{margin-top:18px;border-radius:16px;background:linear-gradient(135deg,#F7F9FD,#E8EEFA);border:1px solid var(--line);padding:14px 16px;font-size:12px;color:var(--ink-2)}
-.idcard .t{font-weight:800;color:var(--ink);font-size:13px;margin-bottom:10px}
+.idcard{margin-top:18px;border-radius:16px;background:linear-gradient(135deg,#FBF7F1,#F1E7D9);border:1px solid #E7DAC6;padding:14px 16px;font-size:12px;color:#7A6450}
+.idcard .t{font-weight:800;color:var(--brown);font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
 .idcard .l{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
-.idcard .hl{outline:2px solid var(--care);outline-offset:3px;border-radius:4px;color:var(--care-deep);font-weight:800;display:inline-block}
-.idcard i{display:block;height:7px;border-radius:4px;background:#D3DAE8;margin-top:3px}
+.idcard .hl{outline:2px solid var(--blue);outline-offset:3px;border-radius:4px;color:var(--blue-deep);font-weight:800;display:inline-block}
+.idcard i{display:block;height:7px;border-radius:4px;background:#E2D4BF;margin-top:3px}
 
 .otp{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:24px;cursor:text}
-.otp div{height:58px;border-radius:14px;background:var(--fill);display:grid;place-items:center;font-size:24px;font-weight:800;border:1.5px solid transparent}
+.otp div{height:58px;border-radius:14px;background:var(--fill);display:grid;place-items:center;font-size:24px;font-weight:900;border:2px solid transparent}
 .otp div.cur{border-color:var(--care);background:#fff}
 .otp-input{position:absolute;opacity:0;width:1px;height:1px}
-.suggest{align-self:center;display:inline-flex;gap:8px;align-items:center;background:var(--fill);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600}
+.suggest{align-self:center;display:inline-flex;gap:8px;align-items:center;background:var(--fill);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700}
 .suggest b{color:var(--care-deep)}
 .resend{font-size:14px;color:var(--ink-2);text-align:center;margin-top:18px}
 
 .give{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
 .give div{border-radius:16px;padding:14px;font-size:14px}
 .give .a{background:var(--fill)} .give .g{background:var(--care-soft)}
-.give h3{font-size:14px;margin-bottom:8px}
+.give h3{font-size:14px;font-weight:800;margin-bottom:8px}
 .give ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
-.consents{margin-top:16px;border:1.5px solid var(--line);border-radius:18px;overflow:hidden}
+.consents{margin-top:16px;border:2px solid var(--line);border-radius:18px;overflow:hidden}
 .consents .check{padding:14px 16px;margin:0}
 .consents .check+.check{border-top:1px solid var(--line)}
 
+.vlock{display:inline-flex;align-items:center;gap:6px;color:var(--blue)}
 .doc{display:flex;gap:14px;align-items:center;background:var(--fill);border-radius:18px;padding:14px;margin-top:20px}
-.doc .av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F3D3B8,#C98F6A);display:grid;place-items:center;font-weight:800;color:#5B3420;flex:none}
-.doc b{display:block;font-size:15.5px}
+.doc .av{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#F3D3B8,#C98F6A);display:grid;place-items:center;font-weight:900;color:#5B3420;flex:none}
+.doc b{display:block;font-size:15.5px;font-weight:800}
 .doc span{font-size:13.5px;color:var(--ink-2)}
 .days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:20px}
-.day{border-radius:14px;background:var(--fill);padding:9px 0;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink-2)}
-.day b{display:block;font-size:18px;color:var(--ink)}
-.day.sel{background:var(--care);color:#E3EBFF}
+.day{border-radius:14px;background:var(--fill);padding:9px 0;text-align:center;font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+.day b{display:block;font-size:19px;color:var(--ink);font-weight:900;letter-spacing:0}
+.day.sel{background:var(--care);color:#CFE0FF}
 .day.sel b{color:#fff}
 .tgroup{margin-top:18px}
-.tgroup h4{font-size:14px;color:var(--ink-2);font-weight:700;margin-bottom:8px}
+.tgroup h4{font-size:11.5px;color:var(--ink-2);font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
 .times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.time{border:1.5px solid var(--line);border-radius:12px;padding:11px 0;text-align:center;font-weight:700;font-size:14.5px;background:#fff}
+.time{border:2px solid var(--line);border-radius:12px;padding:10px 0;text-align:center;font-weight:800;font-size:14.5px;background:#fff}
 .time.sel{border-color:var(--care);background:var(--care-soft);color:var(--care-deep)}
 
-.scrim{position:absolute;inset:0;background:rgba(13,26,51,.42);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
+.scrim{position:absolute;inset:0;background:rgba(7,19,49,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
 .scrim.on{opacity:1;pointer-events:auto}
-.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:30px 30px 0 0;padding:12px 24px 30px;transform:translateY(105%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s;z-index:6;max-height:84%;overflow:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:30px 30px 0 0;padding:12px 22px 28px;transform:translateY(105%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s;z-index:6;max-height:84%;overflow:auto;display:flex;flex-direction:column}
 .sheet.on{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
-.grab{width:42px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 18px}
-.sheet h3{font-size:21px;letter-spacing:-.01em;margin-bottom:8px}
+.grab{width:42px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 18px;flex:none}
+.sheet h3{font-size:23px;font-weight:900;letter-spacing:-.02em;margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .sheet p{font-size:15.5px;color:var(--ink-2);margin-bottom:12px}
-.sheet .who{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;color:var(--care-deep);background:var(--care-soft);border-radius:14px;padding:12px 14px;margin:4px 0 18px}
+.sheet .who{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:700;color:var(--care-deep);background:var(--care-soft);border-radius:14px;padding:12px 14px;margin:4px 0 18px}
 .sheet .who svg{width:18px;height:18px;flex:none}
 .sheet ol{padding-left:20px;color:var(--ink-2);font-size:15px;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-.hopts{display:flex;flex-direction:column;gap:10px;margin:8px 0 14px}
-.hopts button{text-align:left;background:var(--fill);border-radius:16px;padding:15px 16px;font-weight:700;font-size:15.5px}
-.hopts small{display:block;font-weight:500;color:var(--ink-2);font-size:13px}
-.toast{position:absolute;left:20px;right:20px;top:104px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;z-index:7;opacity:0;transform:translateY(-8px);transition:all .25s;pointer-events:none}
+.hopts{display:flex;flex-direction:column;gap:8px;margin:8px 0 14px}
+.hopts button{text-align:left;background:var(--fill);border-radius:16px;padding:15px 16px;font-weight:800;font-size:15.5px}
+.hopts small{display:block;font-weight:600;color:var(--ink-2);font-size:13px}
+.toast{position:absolute;left:20px;right:20px;top:104px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;z-index:7;opacity:0;transform:translateY(-8px);transition:all .25s;pointer-events:none}
 .toast.on{opacity:1;transform:none}
 
 .fadein{animation:fi .3s ease}
 @keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.fadein,.spin{animation:none}.sheet,.scrim,.toast,.dots span{transition:none}}
+@media (prefers-reduced-motion:reduce){.fadein,.spin{animation:none}.sheet,.scrim,.toast,.bar i,.screen,.statusbar,.gs,.btn.primary{transition:none}}
 @media (max-width:820px){
   .stage{padding:0;display:block}
   .device{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none}
@@ -203,6 +254,11 @@ button{cursor:pointer;background:none;border:0}
   .statusbar,.restart{display:none}
 }
 </style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="v-sun" viewBox="286 118 430 430"><path fill="currentColor" fill-rule="evenodd" d="M501.5 123.0 L499.0 124.0 L498.0 129.5 L497.0 130.0 L492.0 141.5 L487.0 147.0 L487.0 148.5 L479.5 156.0 L478.0 156.0 L475.5 159.0 L472.0 160.0 L468.5 163.0 L466.0 163.0 L463.5 165.0 L461.0 165.0 L460.5 166.0 L458.0 166.0 L457.5 167.0 L455.0 167.0 L454.5 168.0 L442.0 169.0 L441.5 170.0 L436.0 170.0 L435.5 169.0 L428.0 169.0 L427.5 168.0 L424.0 168.0 L423.5 167.0 L421.0 167.0 L418.5 165.0 L416.0 165.0 L415.5 164.0 L412.0 163.0 L410.5 161.0 L409.0 161.0 L407.5 159.0 L406.0 159.0 L404.5 157.0 L403.0 157.0 L399.5 153.0 L398.0 153.0 L396.5 151.0 L395.0 151.0 L395.0 153.5 L396.0 154.0 L396.0 159.5 L397.0 160.0 L397.0 178.5 L396.0 179.0 L396.0 183.5 L395.0 184.0 L395.0 187.5 L393.0 190.0 L393.0 192.5 L392.0 193.0 L390.0 198.5 L388.0 200.0 L388.0 201.5 L385.0 204.0 L385.0 205.5 L369.5 220.0 L368.0 220.0 L366.5 222.0 L365.0 222.0 L358.5 226.0 L356.0 226.0 L355.5 227.0 L353.0 227.0 L352.5 228.0 L336.0 230.0 L335.5 229.0 L326.0 229.0 L325.5 228.0 L320.0 228.0 L319.0 227.0 L319.0 229.5 L322.0 232.0 L322.0 233.5 L328.0 240.0 L328.0 241.5 L331.0 245.0 L331.0 246.5 L333.0 249.0 L333.0 251.5 L335.0 254.0 L335.0 257.5 L336.0 258.0 L336.0 261.5 L337.0 262.0 L337.0 279.5 L336.0 280.0 L336.0 285.5 L335.0 286.0 L335.0 288.5 L334.0 289.0 L333.0 295.5 L332.0 296.0 L327.0 307.5 L324.0 310.0 L324.0 311.5 L311.5 323.0 L306.0 325.0 L302.5 328.0 L300.0 328.0 L297.5 330.0 L295.0 330.0 L294.5 331.0 L291.0 332.0 L291.0 333.5 L295.5 334.5 L300.0 337.5 L302.5 337.5 L303.0 338.5 L306.5 339.5 L308.0 341.5 L311.5 342.5 L324.0 354.0 L324.0 355.5 L327.0 358.0 L327.0 359.5 L328.0 360.0 L328.0 361.5 L329.0 362.0 L329.0 363.5 L333.0 370.0 L334.0 376.5 L335.0 377.0 L335.0 379.5 L336.0 380.0 L336.0 385.5 L337.0 386.0 L337.0 403.5 L336.0 404.0 L336.0 407.5 L335.0 408.0 L335.0 410.5 L334.0 411.0 L334.0 413.5 L333.0 414.0 L333.0 416.5 L332.0 417.0 L331.0 420.5 L329.0 422.0 L329.0 423.5 L326.0 427.0 L326.0 428.5 L319.0 436.0 L319.0 437.5 L340.5 435.5 L341.0 436.5 L348.5 436.5 L349.0 437.5 L352.5 437.5 L353.0 438.5 L358.5 439.5 L359.0 440.5 L366.5 443.5 L372.0 448.5 L373.5 448.5 L385.0 460.0 L385.0 461.5 L388.0 464.0 L388.0 465.5 L390.0 467.0 L390.0 468.5 L393.0 473.0 L393.0 475.5 L395.0 478.0 L395.0 481.5 L396.0 482.0 L396.0 486.5 L397.0 487.0 L397.0 505.5 L396.0 506.0 L396.0 511.5 L395.0 512.0 L395.0 514.5 L396.5 514.5 L398.0 512.5 L399.5 512.5 L403.0 508.5 L404.5 508.5 L407.0 505.5 L410.5 504.5 L412.0 502.5 L413.5 502.5 L416.0 500.5 L418.5 500.5 L421.0 498.5 L423.5 498.5 L424.0 497.5 L427.5 497.5 L428.0 496.5 L434.5 496.5 L435.0 495.5 L442.5 495.5 L443.0 496.5 L454.5 497.5 L455.0 498.5 L457.5 498.5 L458.0 499.5 L466.5 501.5 L467.0 502.5 L472.5 504.5 L474.0 506.5 L475.5 506.5 L478.0 509.5 L479.5 509.5 L487.0 517.0 L487.0 518.5 L492.0 524.0 L492.0 525.5 L493.0 526.0 L493.0 527.5 L494.0 528.0 L494.0 529.5 L498.0 536.0 L498.0 538.5 L499.0 539.0 L499.0 541.5 L500.0 542.5 L502.5 539.5 L502.5 537.0 L504.5 534.5 L504.5 532.0 L505.5 531.5 L507.5 526.0 L509.5 524.5 L509.5 523.0 L511.5 521.5 L511.5 520.0 L515.5 516.5 L515.5 515.0 L520.0 510.5 L521.5 510.5 L527.0 505.5 L528.5 505.5 L529.0 504.5 L530.5 504.5 L537.0 500.5 L542.5 499.5 L543.0 498.5 L546.5 498.5 L547.0 497.5 L550.5 497.5 L551.0 496.5 L558.5 496.5 L559.0 495.5 L565.5 495.5 L566.0 496.5 L572.5 496.5 L573.0 497.5 L576.5 497.5 L577.0 498.5 L582.5 499.5 L583.0 500.5 L590.5 503.5 L592.0 505.5 L593.5 505.5 L595.0 507.5 L596.5 507.5 L599.0 510.5 L600.5 510.5 L604.0 514.5 L605.5 514.5 L604.5 503.0 L603.5 502.5 L603.5 489.0 L604.5 488.5 L604.5 483.0 L605.5 482.5 L606.5 476.0 L607.5 475.5 L611.5 466.0 L617.5 459.5 L617.5 458.0 L631.0 445.5 L632.5 445.5 L634.0 443.5 L635.5 443.5 L642.0 439.5 L644.5 439.5 L645.0 438.5 L647.5 438.5 L648.0 437.5 L651.5 437.5 L652.0 436.5 L659.5 436.5 L660.0 435.5 L675.5 436.5 L676.0 437.5 L680.5 437.5 L681.0 438.5 L682.5 437.5 L680.5 435.5 L680.5 434.0 L676.5 430.5 L676.5 429.0 L673.5 426.5 L673.5 425.0 L671.5 423.5 L671.5 422.0 L667.5 415.5 L665.5 407.0 L664.5 406.5 L664.5 402.0 L663.5 401.5 L663.5 388.0 L664.5 387.5 L664.5 382.0 L665.5 381.5 L666.5 374.0 L667.5 373.5 L667.5 371.0 L669.5 368.5 L669.5 366.0 L670.5 365.5 L671.5 362.0 L673.5 360.5 L674.5 357.0 L678.5 353.5 L678.5 352.0 L683.0 347.5 L684.5 347.5 L691.0 341.5 L692.5 341.5 L693.0 340.5 L694.5 340.5 L695.0 339.5 L696.5 339.5 L703.0 335.5 L705.5 335.5 L706.0 334.5 L709.5 333.5 L708.5 331.0 L703.0 330.0 L702.5 329.0 L691.0 324.0 L683.5 317.0 L682.0 317.0 L679.5 314.5 L679.5 313.0 L674.5 308.5 L673.5 305.0 L671.5 303.5 L671.5 302.0 L669.5 299.5 L669.5 297.0 L668.5 296.5 L667.5 292.0 L666.5 291.5 L666.5 288.0 L665.5 287.5 L665.5 284.0 L664.5 283.5 L664.5 278.0 L663.5 277.5 L663.5 264.0 L664.5 263.5 L665.5 255.0 L667.5 252.5 L667.5 250.0 L668.5 249.5 L671.5 242.0 L673.5 240.5 L673.5 239.0 L675.5 237.5 L675.5 236.0 L680.5 231.5 L680.5 230.0 L682.5 228.0 L681.0 227.0 L680.5 228.0 L676.0 228.0 L675.5 229.0 L666.0 229.0 L665.5 230.0 L662.0 230.0 L661.5 229.0 L652.0 229.0 L651.5 228.0 L648.0 228.0 L647.5 227.0 L642.0 226.0 L641.5 225.0 L636.0 223.0 L634.5 221.0 L633.0 221.0 L631.5 219.0 L630.0 219.0 L626.5 215.0 L625.0 215.0 L613.5 202.5 L613.5 201.0 L611.5 199.5 L611.5 198.0 L610.5 197.5 L610.5 196.0 L606.5 189.5 L606.5 187.0 L605.5 186.5 L604.5 177.0 L603.5 176.5 L603.5 163.0 L604.5 162.5 L605.5 151.0 L604.0 151.0 L601.5 154.0 L600.0 154.0 L596.5 158.0 L595.0 158.0 L590.5 162.0 L589.0 162.0 L582.5 166.0 L577.0 167.0 L576.5 168.0 L573.0 168.0 L572.5 169.0 L566.0 169.0 L565.5 170.0 L559.0 170.0 L558.5 169.0 L551.0 169.0 L550.5 168.0 L543.0 167.0 L542.5 166.0 L537.0 165.0 L536.5 164.0 L527.0 160.0 L515.5 150.5 L515.5 149.0 L511.5 145.5 L511.5 144.0 L509.5 142.5 L508.5 139.0 L506.5 137.5 L506.5 136.0 L504.5 133.5 L504.5 131.0 L502.5 128.5Z M486.0 192.5 L515.5 192.5 L516.0 193.5 L522.5 193.5 L523.0 194.5 L527.5 194.5 L528.0 195.5 L532.5 195.5 L533.0 196.5 L536.5 196.5 L537.0 197.5 L539.5 197.5 L540.0 198.5 L543.5 198.5 L544.0 199.5 L546.5 199.5 L549.0 201.5 L551.5 201.5 L554.0 203.5 L556.5 203.5 L557.0 204.5 L558.5 204.5 L559.0 205.5 L570.5 210.5 L572.0 212.5 L575.5 213.5 L577.0 215.5 L578.5 215.5 L580.0 217.5 L581.5 217.5 L584.0 220.5 L585.5 220.5 L589.0 224.5 L590.5 224.5 L609.0 243.0 L609.0 244.5 L616.0 252.0 L616.0 253.5 L618.0 255.0 L619.0 258.5 L621.0 260.0 L622.0 263.5 L624.0 265.0 L624.0 266.5 L625.0 267.0 L625.0 268.5 L629.0 275.0 L629.0 277.5 L631.0 280.0 L631.0 282.5 L633.0 285.0 L633.0 287.5 L634.0 288.0 L634.0 290.5 L635.0 291.0 L635.0 293.5 L636.0 294.0 L636.0 297.5 L637.0 298.0 L637.0 301.5 L638.0 302.0 L638.0 306.5 L639.0 307.0 L639.0 312.5 L640.0 313.0 L640.0 321.5 L641.0 322.0 L641.0 343.5 L640.0 344.0 L640.0 352.5 L639.0 353.0 L639.0 358.5 L638.0 359.0 L638.0 363.5 L637.0 364.0 L636.0 371.5 L635.0 372.0 L633.0 380.5 L631.0 383.0 L631.0 385.5 L628.0 390.0 L628.0 392.5 L627.0 393.0 L624.0 400.5 L622.0 402.0 L621.0 405.5 L619.0 407.0 L619.0 408.5 L617.0 410.0 L617.0 411.5 L615.0 413.0 L615.0 414.5 L609.0 421.0 L609.0 422.5 L590.5 441.0 L589.0 441.0 L585.5 445.0 L584.0 445.0 L581.5 448.0 L580.0 448.0 L575.5 452.0 L572.0 453.0 L570.5 455.0 L569.0 455.0 L568.5 456.0 L567.0 456.0 L566.5 457.0 L565.0 457.0 L564.5 458.0 L563.0 458.0 L556.5 462.0 L554.0 462.0 L551.5 464.0 L549.0 464.0 L548.5 465.0 L546.0 465.0 L545.5 466.0 L543.0 466.0 L542.5 467.0 L540.0 467.0 L539.5 468.0 L537.0 468.0 L536.5 469.0 L528.0 470.0 L527.5 471.0 L522.0 471.0 L521.5 472.0 L515.0 472.0 L514.5 473.0 L486.0 473.0 L485.5 472.0 L479.0 472.0 L478.5 471.0 L473.0 471.0 L472.5 470.0 L461.0 468.0 L460.5 467.0 L452.0 465.0 L449.5 463.0 L447.0 463.0 L442.5 460.0 L440.0 460.0 L439.5 459.0 L436.0 458.0 L434.5 456.0 L433.0 456.0 L432.5 455.0 L429.0 454.0 L427.5 452.0 L424.0 451.0 L418.5 446.0 L417.0 446.0 L414.5 443.0 L413.0 443.0 L394.5 425.5 L394.5 424.0 L389.5 419.5 L389.5 418.0 L386.5 415.5 L386.5 414.0 L384.5 412.5 L384.5 411.0 L380.5 406.5 L379.5 403.0 L377.5 401.5 L377.5 400.0 L376.5 399.5 L376.5 398.0 L375.5 397.5 L375.5 396.0 L371.5 389.5 L371.5 387.0 L369.5 384.5 L369.5 382.0 L367.5 379.5 L367.5 377.0 L366.5 376.5 L366.5 373.0 L365.5 372.5 L365.5 370.0 L364.5 369.5 L364.5 366.0 L363.5 365.5 L363.5 362.0 L362.5 361.5 L362.5 357.0 L361.5 356.5 L361.5 350.0 L360.5 349.5 L360.5 337.0 L359.5 336.5 L360.5 316.0 L361.5 315.5 L361.5 309.0 L362.5 308.5 L362.5 304.0 L363.5 303.5 L365.5 292.0 L366.5 291.5 L367.5 286.0 L369.5 283.5 L369.5 281.0 L371.5 278.5 L371.5 276.0 L372.5 275.5 L377.5 264.0 L379.5 262.5 L380.5 259.0 L382.5 257.5 L382.5 256.0 L384.5 254.5 L384.5 253.0 L386.5 251.5 L386.5 250.0 L389.5 247.5 L389.5 246.0 L408.0 226.5 L409.5 226.5 L414.0 221.5 L415.5 221.5 L418.0 218.5 L419.5 218.5 L421.0 216.5 L422.5 216.5 L427.0 212.5 L430.5 211.5 L432.0 209.5 L433.5 209.5 L434.0 208.5 L435.5 208.5 L442.0 204.5 L444.5 204.5 L449.0 201.5 L451.5 201.5 L452.0 200.5 L454.5 200.5 L455.0 199.5 L457.5 199.5 L458.0 198.5 L460.5 198.5 L461.0 197.5 L464.5 197.5 L465.0 196.5 L468.5 196.5 L469.0 195.5 L472.5 195.5 L473.0 194.5 L478.5 194.5 L479.0 193.5 L485.5 193.5Z"/></symbol>
+<symbol id="v-word" viewBox="138 580 724 292"><path fill="currentColor" fill-rule="evenodd" d="M346.0 674.0 L346.0 865.5 L390.5 865.5 L390.5 674.0Z M143.0 674.0 L143.0 676.5 L144.0 677.0 L144.0 682.5 L145.0 683.0 L145.0 687.5 L146.0 688.0 L146.0 693.5 L147.0 694.0 L147.0 697.5 L148.0 698.0 L148.0 702.5 L149.0 703.0 L149.0 707.5 L150.0 708.0 L150.0 711.5 L151.0 712.0 L151.0 715.5 L152.0 716.0 L153.0 724.5 L154.0 725.0 L154.0 727.5 L155.0 728.0 L156.0 735.5 L157.0 736.0 L157.0 738.5 L158.0 739.0 L158.0 742.5 L159.0 743.0 L159.0 745.5 L160.0 746.0 L160.0 749.5 L161.0 750.0 L161.0 752.5 L162.0 753.0 L162.0 755.5 L163.0 756.0 L163.0 758.5 L164.0 759.0 L164.0 761.5 L165.0 762.0 L165.0 764.5 L166.0 765.0 L168.0 773.5 L170.0 776.0 L171.0 781.5 L173.0 784.0 L174.0 789.5 L177.0 794.0 L177.0 796.5 L179.0 799.0 L179.0 801.5 L183.0 808.0 L183.0 810.5 L184.0 811.0 L184.0 812.5 L185.0 813.0 L185.0 814.5 L186.0 815.0 L186.0 816.5 L187.0 817.0 L187.0 818.5 L188.0 819.0 L188.0 820.5 L189.0 821.0 L189.0 822.5 L190.0 823.0 L190.0 824.5 L191.0 825.0 L191.0 826.5 L192.0 827.0 L192.0 828.5 L193.0 829.0 L198.0 840.5 L200.0 842.0 L203.0 849.5 L205.0 851.0 L206.0 854.5 L208.0 856.0 L209.0 859.5 L211.0 861.0 L211.0 862.5 L213.0 864.0 L213.0 865.5 L251.5 865.5 L251.5 864.0 L253.5 862.5 L254.5 859.0 L256.5 857.5 L256.5 856.0 L258.5 854.5 L259.5 851.0 L261.5 849.5 L261.5 848.0 L262.5 847.5 L263.5 844.0 L265.5 842.5 L265.5 841.0 L266.5 840.5 L271.5 829.0 L273.5 827.5 L273.5 826.0 L275.5 823.5 L275.5 821.0 L276.5 820.5 L276.5 819.0 L277.5 818.5 L277.5 817.0 L278.5 816.5 L278.5 815.0 L282.5 808.5 L282.5 806.0 L285.5 801.5 L285.5 799.0 L288.5 794.5 L288.5 792.0 L289.5 791.5 L290.5 787.0 L292.5 784.5 L293.5 779.0 L295.5 776.5 L295.5 774.0 L296.5 773.5 L296.5 771.0 L297.5 770.5 L297.5 768.0 L298.5 767.5 L298.5 765.0 L299.5 764.5 L299.5 762.0 L300.5 761.5 L300.5 759.0 L301.5 758.5 L301.5 756.0 L302.5 755.5 L302.5 753.0 L303.5 752.5 L303.5 750.0 L304.5 749.5 L304.5 746.0 L305.5 745.5 L305.5 743.0 L306.5 742.5 L306.5 739.0 L307.5 738.5 L307.5 736.0 L308.5 735.5 L308.5 732.0 L309.5 731.5 L309.5 728.0 L310.5 727.5 L310.5 724.0 L311.5 723.5 L311.5 720.0 L312.5 719.5 L312.5 716.0 L313.5 715.5 L313.5 712.0 L314.5 711.5 L314.5 708.0 L315.5 707.5 L315.5 703.0 L316.5 702.5 L316.5 698.0 L317.5 697.5 L317.5 693.0 L318.5 692.5 L318.5 688.0 L319.5 687.5 L319.5 682.0 L320.5 681.5 L321.5 674.0 L275.0 674.0 L275.0 679.5 L274.0 680.0 L274.0 685.5 L273.0 686.0 L273.0 691.5 L272.0 692.0 L272.0 696.5 L271.0 697.0 L271.0 702.5 L270.0 703.0 L269.0 712.5 L268.0 713.0 L268.0 716.5 L267.0 717.0 L267.0 721.5 L266.0 722.0 L266.0 725.5 L265.0 726.0 L263.0 737.5 L262.0 738.0 L261.0 744.5 L260.0 745.0 L260.0 747.5 L259.0 748.0 L259.0 750.5 L258.0 751.0 L258.0 754.5 L257.0 755.0 L255.0 763.5 L253.0 766.0 L252.0 771.5 L250.0 774.0 L250.0 776.5 L248.0 779.0 L248.0 781.5 L245.0 786.0 L245.0 788.5 L244.0 789.0 L244.0 790.5 L243.0 791.0 L243.0 792.5 L242.0 793.0 L242.0 794.5 L241.0 795.0 L241.0 796.5 L240.0 797.0 L240.0 798.5 L239.0 799.0 L239.0 800.5 L238.0 801.0 L238.0 802.5 L237.0 803.0 L237.0 804.5 L236.0 805.0 L233.5 811.0 L231.5 810.5 L230.5 807.0 L228.5 805.5 L228.5 804.0 L224.5 797.5 L224.5 795.0 L223.5 794.5 L223.5 793.0 L219.5 786.5 L219.5 784.0 L216.5 779.5 L216.5 777.0 L214.5 774.5 L213.5 769.0 L211.5 766.5 L211.5 764.0 L210.5 763.5 L210.5 761.0 L209.5 760.5 L209.5 758.0 L208.5 757.5 L208.5 755.0 L207.5 754.5 L207.5 751.0 L206.5 750.5 L206.5 748.0 L205.5 747.5 L205.5 745.0 L204.5 744.5 L204.5 741.0 L203.5 740.5 L203.5 737.0 L202.5 736.5 L202.5 734.0 L201.5 733.5 L201.5 730.0 L200.5 729.5 L200.5 726.0 L199.5 725.5 L199.5 721.0 L198.5 720.5 L198.5 717.0 L197.5 716.5 L197.5 712.0 L196.5 711.5 L196.5 707.0 L195.5 706.5 L195.5 702.0 L194.5 701.5 L194.5 697.0 L193.5 696.5 L193.5 692.0 L192.5 691.5 L192.5 686.0 L191.5 685.5 L191.5 680.0 L190.5 679.5 L190.5 674.0Z M548.5 675.0 L542.0 674.0 L541.5 673.0 L537.0 673.0 L536.5 672.0 L526.0 672.0 L525.5 671.0 L507.0 673.0 L506.5 674.0 L498.0 676.0 L497.5 677.0 L492.0 679.0 L487.5 683.0 L486.0 683.0 L472.0 698.0 L471.5 674.0 L426.0 674.0 L426.0 865.5 L471.5 865.5 L471.5 755.0 L472.5 754.5 L472.5 750.0 L473.5 749.5 L473.5 746.0 L474.5 745.5 L476.5 737.0 L477.5 736.5 L478.5 733.0 L480.5 731.5 L480.5 730.0 L483.5 727.5 L483.5 726.0 L489.0 720.5 L490.5 720.5 L495.0 716.5 L496.5 716.5 L499.0 714.5 L501.5 714.5 L504.0 712.5 L512.5 711.5 L513.0 710.5 L536.5 710.5 L537.0 711.5 L541.5 711.5 L542.0 712.5 L549.5 713.5 L549.5 676.0Z M700.0 675.0 L700.0 676.5 L698.0 679.0 L698.0 681.5 L697.0 682.0 L697.0 684.5 L695.0 687.0 L695.0 689.5 L693.0 692.0 L693.0 694.5 L691.0 697.0 L691.0 699.5 L689.0 702.0 L689.0 704.5 L688.0 705.0 L688.0 707.5 L686.0 710.0 L685.0 714.5 L693.5 713.5 L694.0 712.5 L698.5 712.5 L699.0 711.5 L704.5 711.5 L705.0 710.5 L711.5 710.5 L712.0 709.5 L729.5 708.5 L730.0 707.5 L755.5 707.5 L756.0 708.5 L761.5 708.5 L762.0 709.5 L766.5 709.5 L767.0 710.5 L772.5 711.5 L773.0 712.5 L776.5 713.5 L778.0 715.5 L779.5 715.5 L786.0 722.0 L786.0 723.5 L788.0 726.0 L789.0 732.5 L790.0 733.0 L790.0 751.5 L787.0 752.0 L786.5 751.0 L781.0 751.0 L780.5 750.0 L772.0 750.0 L771.5 749.0 L739.0 749.0 L738.5 750.0 L732.0 750.0 L731.5 751.0 L723.0 752.0 L722.5 753.0 L714.0 755.0 L711.5 757.0 L709.0 757.0 L705.5 760.0 L704.0 760.0 L700.5 763.0 L699.0 763.0 L696.5 766.0 L695.0 766.0 L688.0 773.0 L688.0 774.5 L686.0 776.0 L686.0 777.5 L682.0 782.0 L681.0 786.5 L680.0 787.0 L679.0 791.5 L678.0 792.0 L677.0 801.5 L676.0 802.0 L676.0 817.5 L677.0 818.0 L678.0 826.5 L679.0 827.0 L680.0 832.5 L681.0 833.0 L684.0 840.5 L689.0 846.0 L689.0 847.5 L700.0 857.5 L701.5 857.5 L703.0 859.5 L704.5 859.5 L705.0 860.5 L706.5 860.5 L713.0 864.5 L715.5 864.5 L716.0 865.5 L718.5 865.5 L719.0 866.5 L721.5 866.5 L722.0 867.5 L726.5 867.5 L727.0 868.5 L733.5 868.5 L734.0 869.5 L749.5 869.5 L750.0 868.5 L757.5 868.5 L758.0 867.5 L761.5 867.5 L762.0 866.5 L770.5 864.5 L771.0 863.5 L778.5 860.5 L783.0 856.5 L784.5 856.5 L796.0 844.5 L799.0 848.0 L799.0 849.5 L807.0 857.5 L808.5 857.5 L810.0 859.5 L813.5 860.5 L815.0 862.5 L817.5 862.5 L818.0 863.5 L822.5 864.5 L823.0 865.5 L832.5 866.5 L833.0 867.5 L845.5 867.5 L846.0 866.5 L851.5 866.5 L852.0 865.5 L855.5 865.5 L856.0 864.5 L857.5 864.5 L857.5 832.0 L846.0 832.0 L845.5 831.0 L842.0 831.0 L834.5 824.5 L834.5 823.0 L832.5 820.5 L832.5 816.0 L831.5 815.5 L831.5 723.0 L830.5 722.5 L830.5 717.0 L829.5 716.5 L829.5 713.0 L828.5 712.5 L827.5 707.0 L825.5 704.5 L825.5 702.0 L823.5 700.5 L822.5 697.0 L819.5 694.5 L819.5 693.0 L812.5 686.0 L811.0 686.0 L806.5 682.0 L805.0 682.0 L804.5 681.0 L803.0 681.0 L796.5 677.0 L794.0 677.0 L793.5 676.0 L791.0 676.0 L790.5 675.0 L787.0 675.0 L786.5 674.0 L783.0 674.0 L782.5 673.0 L778.0 673.0 L777.5 672.0 L771.0 672.0 L770.5 671.0 L758.0 671.0 L757.5 670.0 L740.0 670.0 L739.5 671.0 L725.0 671.0 L724.5 672.0 L717.0 672.0 L716.5 673.0 L710.0 673.0 L709.5 674.0Z M788.5 783.5 L790.0 785.0 L790.0 804.5 L789.0 805.0 L789.0 808.5 L788.0 809.0 L788.0 811.5 L787.0 812.0 L785.0 817.5 L783.0 819.0 L783.0 820.5 L773.5 829.0 L772.0 829.0 L765.5 833.0 L759.0 834.0 L758.5 835.0 L742.0 835.0 L741.5 834.0 L738.0 834.0 L737.5 833.0 L735.0 833.0 L734.5 832.0 L731.0 831.0 L722.5 822.5 L722.5 821.0 L720.5 818.5 L720.5 815.0 L719.5 814.5 L719.5 803.0 L720.5 802.5 L720.5 800.0 L721.5 799.5 L722.5 796.0 L725.5 793.5 L725.5 792.0 L727.5 791.5 L731.0 787.5 L732.5 787.5 L735.0 785.5 L737.5 785.5 L738.0 784.5 L740.5 784.5 L741.0 783.5 L750.5 782.5 L751.0 781.5 L772.5 781.5 L773.0 782.5Z M609.0 617.0 L608.5 618.0 L605.0 618.0 L604.5 619.0 L602.0 619.0 L601.5 620.0 L599.0 620.0 L598.5 621.0 L595.0 621.0 L594.5 622.0 L592.0 622.0 L591.5 623.0 L588.0 623.0 L587.5 624.0 L585.0 624.0 L584.5 625.0 L582.0 625.0 L581.5 626.0 L578.0 626.0 L577.5 627.0 L575.0 627.0 L574.5 628.0 L568.0 629.0 L567.0 630.0 L567.0 819.5 L568.0 820.0 L568.0 824.5 L569.0 825.0 L569.0 828.5 L570.0 829.0 L572.0 837.5 L575.0 841.0 L576.0 844.5 L588.0 857.5 L589.5 857.5 L594.0 861.5 L595.5 861.5 L598.0 863.5 L600.5 863.5 L603.0 865.5 L609.5 866.5 L610.0 867.5 L613.5 867.5 L614.0 868.5 L621.5 868.5 L622.0 869.5 L637.5 869.5 L638.0 868.5 L645.5 868.5 L646.0 867.5 L654.5 866.5 L655.0 865.5 L660.5 864.5 L663.5 862.5 L663.5 826.0 L659.0 826.0 L658.5 827.0 L654.0 827.0 L653.5 828.0 L648.0 828.0 L647.5 829.0 L629.0 829.0 L628.5 828.0 L626.0 828.0 L625.5 827.0 L621.0 826.0 L616.5 821.5 L616.5 820.0 L613.5 815.5 L613.5 813.0 L612.5 812.5 L612.5 807.0 L611.5 806.5 L611.5 713.0 L666.5 712.5 L667.5 708.0 L669.5 705.5 L669.5 703.0 L671.5 700.5 L671.5 698.0 L673.5 695.5 L674.5 690.0 L676.5 687.5 L676.5 685.0 L678.5 682.5 L678.5 680.0 L679.5 679.5 L681.5 674.0 L612.0 674.0 L611.5 617.0Z M357.0 587.0 L356.5 588.0 L353.0 589.0 L351.5 591.0 L350.0 591.0 L344.0 597.0 L344.0 598.5 L341.0 603.0 L341.0 605.5 L340.0 606.0 L340.0 621.5 L341.0 622.0 L341.0 624.5 L342.0 625.0 L343.0 628.5 L345.0 630.0 L345.0 631.5 L350.0 636.5 L351.5 636.5 L355.0 639.5 L357.5 639.5 L358.0 640.5 L360.5 640.5 L361.0 641.5 L375.5 641.5 L376.0 640.5 L379.5 640.5 L380.0 639.5 L385.5 637.5 L392.5 630.5 L392.5 629.0 L395.5 625.5 L396.5 619.0 L397.5 618.5 L397.5 609.0 L396.5 608.5 L395.5 602.0 L389.5 593.0 L388.0 593.0 L385.5 590.0 L384.0 590.0 L379.5 587.0 L377.0 587.0 L376.5 586.0 L360.0 586.0 L359.5 587.0Z"/></symbol>
+<symbol id="ups" viewBox="0 0 52.242 61.979"><g transform="matrix(1.25 0 0 -1.25 -47.372 728.76)"><g transform="translate(.36060 .36060)"><path d="m38.962 567.66 0.17739-20.134 4.5235-5.5879 13.571-7.1844 16.675 8.1601 3.4592 8.2488-0.35478 26.698-12.595 0.35478-13.127-2.1287-11.974-6.9183z" fill-rule="evenodd" fill="#301506"/><path d="m25.619 0c-9.881 0-18.5 1.913-25.619 5.6855v30.16c0 6.3462 2.3845 11.653 6.8945 15.35 4.1875 3.435 17.138 9.0957 18.725 9.7832 1.505-0.655 14.609-6.4032 18.73-9.7832 4.5075-3.695 6.8926-9.0034 6.8926-15.35v-30.16c-7.12-3.773-15.739-5.686-25.624-5.686zm14.631 5.8398c2.9466 0.038525 5.8399 0.22055 8.6367 0.48047v29.525c0 5.6738-2.0588 10.257-6.0312 13.529-3.5488 2.9225-14.25 7.717-17.236 9.0332-3.026-1.334-13.754-6.189-17.239-9.032-3.9489-3.216-6.0275-7.908-6.0275-13.529v-17.252c11.348-10.407 25.128-12.921 37.896-12.754zm-13.963 13.748c-2.4312 0-4.3928 0.54344-6.0078 1.5859v29.049h4.459v-9.3848c0.445 0.13125 1.0909 0.25391 2.0059 0.25391 4.9462 0 7.7891-4.4588 7.7891-10.969 0-6.4975-2.9273-10.535-8.2461-10.535zm15.236 0c-2.9325 0.085-5.9992 2.2093-5.9805 5.8105 0.0075 2.3712 0.66484 4.1445 4.3398 6.3008 1.9612 1.1512 2.7514 1.9098 2.7852 3.3086 0.0375 1.555-1.0369 2.4926-2.6719 2.4863-1.4225-0.01125-3.123-0.8007-4.2617-1.8145v4.1035c1.3962 0.8325 3.1384 1.3828 4.8984 1.3828 4.405 0 6.372-3.1116 6.457-5.9629 0.08375-2.5988-0.63438-4.5652-4.3594-6.7539-1.6625-0.975-2.9754-1.6158-2.9316-3.2383 0.04375-1.5838 1.3586-2.1402 2.6211-2.1289 1.5575 0.01375 3.0641 0.87633 3.9941 1.8301v-3.875c-0.78375-0.60375-2.4431-1.5242-4.8906-1.4492zm-36.893 0.45117v14.012c0 4.7238 2.2345 7.1152 6.6445 7.1152 2.7288 0 5.0143-0.63156 6.7168-1.7891v-19.338h-4.4492v16.801c-0.485 0.3325-1.2044 0.54492-2.1094 0.54492-2.0425 0-2.3477-1.873-2.3477-3.1367v-14.209h-4.4551zm21.687 3.1387c2.5862 0 3.6582 2.0648 3.6582 7.0586 0.000001 4.8725-1.226 7.2266-3.791 7.2266-0.60375 0-1.1285-0.14953-1.4473-0.26953v-13.693c0.36125-0.18 0.97508-0.32227 1.5801-0.32227z" transform="matrix(.8 0 0 -.8 37.897 582.21)" fill="#fab80a"/></g></g></symbol>
+</defs></svg>
 <div class="stage">
   <div class="device">
     <div class="screen">
@@ -240,6 +296,16 @@ const $$ = s => document.querySelectorAll(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SECTIONS = ['Quick check','Coverage','Your health','Join'];
 
+/* brand weight per screen: UPS leads at the door, Virta takes over once health and care begin */
+const BRAND = {landing:'ups', entry:'ups', glp:'ups', measures:'ups', weightNoFit:'ups', age:'ups', age80:'ups', linkSent:'ups',
+  likely:'mix', coverage:'mix', memberId:'mix', nomatch:'mix', notPlan:'mix', phone:'mix', code:'mix'};
+const brand = () => BRAND[cur] || 'virta';
+const UPS = w => `<svg class="lg" width="${w}" height="${Math.round(w*1.186)}" aria-hidden="true"><use href="#ups"/></svg>`;
+const SUN = w => `<svg class="lg" width="${w}" height="${w}" aria-hidden="true"><use href="#v-sun"/></svg>`;
+const WORD = w => `<svg class="lg" width="${w}" height="${Math.round(w*.403)}" aria-hidden="true"><use href="#v-word"/></svg>`;
+const VLOCK = w => `<span class="vlock" role="img" aria-label="Virta">${SUN(w)}${WORD(Math.round(w*2.4))}</span>`;
+const PAIR = (big) => `<div class="pair">${`<span class="t u">${UPS(big?34:28)}</span>`}<span class="plus"><svg width="11" height="11" viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="t v">${SUN(big?34:30)}</span></div>`;
+
 const WHY = {
   entry:['Why we ask what brings you here','Virta treats a few related conditions. Your answer helps us ask only what matters to you.','Nothing is saved yet'],
   measures:['Why we ask your height and weight','Virta\'s weight program is for adults at a BMI of 27 or more. You won\'t see a number or a label. We just do the math.','Stays on your phone until you create an account'],
@@ -252,12 +318,18 @@ const WHY = {
   phone:['Why we use your phone','It\'s your login, so there\'s no password to create. We\'ll also text you a link to pick up where you left off.','Used only for your Virta account']
 };
 
+const band = () => ({
+  ups:`<div class="band ups">${UPS(15)}<span><b>UPS</b> Health Benefits</span><span class="r">with ${SUN(12)} Virta</span></div>`,
+  mix:`<div class="band mix">${UPS(15)}<span class="x">×</span><span class="vw">${SUN(13)}${WORD(32)}</span><span class="r">Your UPS coverage</span></div>`,
+  virta:`<div class="band virta">${VLOCK(14)}<span class="r">${I.lock.replace('<svg','<svg width="13" height="13"')} Private to your care team</span></div>`
+}[brand()]);
 const hdr = (o={}) => {
-  const mid = o.virta ? `<span class="logo virta">Virta logo</span>`
-    : `<span class="sec">${SECTIONS[o.sec]}</span><div class="dots">${SECTIONS.map((_,i)=>`<span class="${i<o.sec?'done':i===o.sec?'on':''}"></span>`).join('')}</div>`;
-  return `<div class="hdr"><button class="back" id="back" aria-label="Back" ${o.noBack||!hist.length?'hidden':''}>${I.back}</button><div class="mid">${mid}</div><button class="help" id="help">Help</button></div>`;
+  const bk = `<button class="back" id="back" aria-label="Back" ${o.noBack||!hist.length?'hidden':''}>${I.back}</button>`;
+  if (o.virta) return `<div class="hdr">${bk}<div class="mid">${VLOCK(18)}</div><button class="help" id="help">Help</button></div>`;
+  return `${band()}<div class="hdr">${bk}<div class="mid"><span class="sec">Step ${o.sec+1} of 4 · ${SECTIONS[o.sec]}</span></div><button class="help" id="help">Help</button></div>
+    <div class="bar" aria-hidden="true">${SECTIONS.map((_,i)=>`<i class="${i<o.sec?'done':i===o.sec?'on':''}"></i>`).join('')}</div>`;
 };
-const guide = (say, extra='', whyKey) => `<div class="gm"><div class="speaker"><span class="orb" aria-hidden="true"></span>Virta Guide</div><h1 class="say">${say}</h1>${extra}${whyKey?`<button class="why" data-why="${whyKey}">Why do we ask?</button>`:''}</div>`;
+const guide = (say, extra='', whyKey) => `<div class="gm"><div class="speaker"><span class="gs" aria-hidden="true">${SUN(22)}</span>Virta Guide</div><h1 class="say">${say}</h1>${extra}${whyKey?`<button class="why" data-why="${whyKey}">Why do we ask?</button>`:''}</div>`;
 const opt = (v, label, sub, sel) => `<button class="opt${sel?' sel':''}" data-a="${esc(v)}"><span class="lbl">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span></button>`;
 const tick = (v, label, sub, sel) => `<button class="opt${sel?' sel':''}" data-t="${esc(v)}"><span class="box"></span><span class="lbl">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span></button>`;
 const field = (id, label, val, attrs='') => `<div class="fbox"><label for="${id}">${label}</label><input id="${id}" value="${esc(val)}" ${attrs}></div>`;
@@ -278,24 +350,26 @@ const addReview = r => { if(!S.review.includes(r)) S.review.push(r); };
 
 const SC = {};
 
-SC.landing = { r:()=>`
-  <div class="endorse">A $0 benefit of your UPS health plan</div>
-  <div class="land-top"><div class="brandrow"><span class="logo ups">UPS logo</span><span class="x">×</span><span class="logo virta">Virta logo</span></div><button class="help" id="help">Help</button></div>
+SC.landing = { r:()=>`<div class="land">
+  <div class="halo" aria-hidden="true"></div>
+  <svg class="sunglow" aria-hidden="true"><use href="#v-sun"/></svg>
+  <div class="land-top"><div class="ups">${UPS(34)}<div><b>UPS Health Benefits</b>New in your health plan</div></div><button class="help" id="help">Help</button></div>
   <div class="content fadein">
-    <div class="hero" role="img" aria-label="Photo placeholder"><span>Photo: UPS hub supervisor, end of shift</span></div>
-    <h1 class="say xl">Lower your blood sugar and lose weight, with a care team on your side.</h1>
-    <p class="lead" style="margin-top:12px">A medical program built around real food. Covered by your UPS health plan.</p>
-    <div class="trust"><div><b>$0</b>covered by UPS</div><div><b>1:1</b>doctor and coach</div><div><b>Private</b>UPS never sees your health info</div></div>
+    <div class="kicker">A $0 benefit for UPSers</div>
+    <h1 class="say xl">Lower your blood sugar. <em>Lose weight.</em></h1>
+    <p class="lead">A medical program built around real food, with a doctor and coach on your side. Built for shift life.</p>
+    <div class="stats"><div><b>$0</b>with your UPS plan</div><div><b>1:1</b>doctor + coach</div><div><b>Private</b>UPS never sees health info</div></div>
+    <div class="partner">In partnership with <span>${SUN(16)}${WORD(40)}</span></div>
   </div>
   <div class="dock">
-    <button class="btn primary" id="start">See if I qualify</button>
+    <button class="btn primary gold" id="start">See if I qualify</button>
     <p class="fine">About 2 minutes. No ID or account needed to check.</p>
     <div class="links"><button id="how">How it works</button><button id="legit">Is this from UPS?</button></div>
-  </div>`,
+  </div></div>`,
   b:()=>{
     $('#start').onclick=()=>go('entry');
     $('#how').onclick=()=>sheet(`<h3>How Virta works</h3><ol><li>Answer a few questions and confirm your UPS coverage.</li><li>Meet your Virta clinician by video.</li><li>Get a connected scale and meter, plus a coach who checks in daily in the app.</li></ol><div class="card" style="margin:0 0 18px"><h3>What it takes</h3><p>About 10 minutes a day, changes to what you eat, and a year for lasting results. Members see a 1.0 point average drop in A1c and 7% average weight loss.</p></div><button class="btn primary" data-close>Got it</button>`);
-    $('#legit').onclick=()=>sheet(`<h3>Yes, this is a UPS benefit</h3><p>UPS added Virta to its health plans. Two ways to check:</p><ol><li>Find Virta on your UPS benefits portal.</li><li>Call the number on your health plan card.</li></ol><div class="who">${I.lock} We never ask for your Social Security number, bank details or a payment.</div><button class="btn primary" data-close>Got it</button>`);
+    $('#legit').onclick=()=>sheet(`<h3>${UPS(26)}Yes, this is a UPS benefit</h3><p>UPS added Virta to its health plans. Two ways to check:</p><ol><li>Find Virta on your UPS benefits portal.</li><li>Call the number on your health plan card.</li></ol><div class="who">${I.lock} We never ask for your Social Security number, bank details or a payment.</div><button class="btn primary" data-close>Got it</button>`);
   }
 };
 
@@ -363,7 +437,7 @@ SC.age = { r:()=>`
 SC.likely = { r:()=>`
   ${hdr({sec:0})}
   <div class="content fadein">
-    <div class="art go">${I.check}</div>
+    ${PAIR(true)}
     <span class="pill">You likely qualify</span>
     <h1 class="say">Good news. Virta looks like a fit, at no cost to you.</h1>
     <p class="lead" style="margin-top:10px">Here's what's next. About 5 minutes, and you can stop anytime.</p>
@@ -390,7 +464,7 @@ SC.linkSent = { r:()=>`
 SC.coverage = { r:()=>`
   ${hdr({sec:1})}
   <div class="content fadein">
-    <div class="art ups" style="margin-top:4px">${I.shield}</div>
+    <div class="art shield" style="margin-bottom:6px">${UPS(32)}</div>
     ${guide("Let's make sure you're covered.", `<p class="lead">With your name and birthday, we can find your UPS health plan.</p>`, 'coverage')}
     <div class="fields">
       ${field('first','Legal first name',S.first,'autocomplete="given-name"')}
@@ -418,7 +492,7 @@ SC.memberId = { r:()=>`
   ${hdr({sec:1})}
   <div class="content fadein">
     ${guide('Enter your member ID.', `<p class="lead">It's on the front of your health plan card. Your UPS employee ID from your pay stub works too.</p>`)}
-    <div class="idcard" aria-hidden="true"><div class="t">UPS Health Plan</div><div class="l"><div>Member<i style="width:80%"></i></div><div>Member ID<br><span class="hl">UPS0482117</span></div><div>Group<i style="width:60%"></i></div><div>Plan<i style="width:70%"></i></div></div></div>
+    <div class="idcard" aria-hidden="true"><div class="t">${UPS(16)}UPS Health Plan</div><div class="l"><div>Member<i style="width:80%"></i></div><div>Member ID<br><span class="hl">UPS0482117</span></div><div>Group<i style="width:60%"></i></div><div>Plan<i style="width:70%"></i></div></div></div>
     <div class="fields">${field('mid','Member ID or employee ID',S.mid,'autocomplete="off" placeholder="e.g. UPS0482117"')}</div>
   </div>
   <div class="dock"><button class="btn primary" id="next">Find my coverage</button></div>`,
@@ -461,11 +535,18 @@ SC.notPlan = { r:()=>`
 };
 
 SC.phone = { r:()=>`
-  ${hdr({sec:1})}
+  <div class="bhero">
+    <svg class="rays" aria-hidden="true"><use href="#v-sun"/></svg>
+    <div class="top"><button class="back" id="back" aria-label="Back" ${hist.length?'':'hidden'}>${I.back}</button><button class="help" id="help">Help</button></div>
+    ${PAIR(true)}
+    <h1 class="say">${S.later?'Thanks':"You're covered"}, ${esc(S.first||'there')}.</h1>
+    <p>${S.later?'We\'ll confirm your UPS coverage within 1 business day.':'Virta is part of your UPS health plan.'}</p>
+    <span class="badge${S.later?' wait':''}">${UPS(15)}${S.later?'Coverage check in progress':'$0 · Verified with UPS'}</span>
+  </div>
   <div class="content fadein">
-    <span class="chip-ups" style="margin:6px 0 16px">${S.later?'Coverage check in progress':'Covered by your UPS plan'}</span>
-    ${guide(`${S.later?'Thanks':"You're covered"}, ${esc(S.first||'there')}. Let's save your spot.`, `<p class="lead">We'll text you a code to create your account. No password needed.</p>`, 'phone')}
-    <div class="fields">
+    <h2 class="ask" style="margin-top:14px">Let's save your spot.</h2>
+    <p class="hint">We'll text you a code to create your account. No password needed. <button class="inl" data-why="phone">Why?</button></p>
+    <div class="fields" style="margin-top:14px">
       ${field('ph','Mobile number',S.phone,'inputmode="tel" autocomplete="tel"')}
       <button class="check ${S.remind?'sel':''}" id="remind"><span class="box"></span>Text me reminders about my application (optional)</button>
     </div>
@@ -598,11 +679,15 @@ SC.eligible = { r:()=>`
 };
 
 SC.booked = { r:()=>`
-  ${hdr({virta:true, noBack:true})}
+  <div class="bhero">
+    <svg class="rays" aria-hidden="true"><use href="#v-sun"/></svg>
+    <div class="top"><button class="back" hidden aria-label="Back">${I.back}</button><span class="vlock" style="color:#fff">${SUN(18)}${WORD(43)}</span><button class="help" id="help">Help</button></div>
+    <div class="art">${I.check}</div>
+    <h1 class="say">You're all set, ${esc(S.first||'there')}.</h1>
+    <p>Welcome to Virta. Here's what happens next.</p>
+  </div>
   <div class="content fadein">
-    <div class="art go">${I.check}</div>
-    <h1 class="say">You're all set. Here's what happens next.</h1>
-    <ul class="steps">
+    <ul class="steps" style="margin-top:16px">
       <li class="done">Joined Virta<small>Today</small></li>
       <li class="now">Your kit ships today<small>Scale and meter, arriving in 3 to 5 days</small></li>
       <li>Visit with Dr. Shah<small>${DAYS[S.day][0]} ${DAYS[S.day][1]}, ${esc(S.slot||'')}. Have a list of your medicines handy.</small></li>
@@ -638,7 +723,7 @@ SC.pregnancy = { r:()=>`
     <p class="lead" style="margin-top:10px">Our eating plan isn't recommended while you're pregnant or nursing. Your coverage will still be here when you're ready.</p>
     <div class="card"><h3>When should we check back in?</h3><p>Your health answers aren't kept.</p>
       <div class="grid2" style="margin-top:12px">${opt('6','In 6 months','',S.reminder==='6')}${opt('12','In 12 months','',S.reminder==='12')}</div></div>
-    <div class="card outline"><h3>UPS support for you now</h3><p>Maternity support and a 24/7 nurse line through your UPS plan.</p></div>
+    <div class="card upsb"><h3>${UPS(16)}UPS support for you now</h3><p>Maternity support and a 24/7 nurse line through your UPS plan.</p></div>
   </div>
   <div class="dock"><button class="btn primary" id="set">Set my reminder</button></div>`,
   b:()=>{ $$('[data-a]').forEach(b=>b.onclick=()=>{ S.reminder=b.dataset.a; $$('[data-a]').forEach(x=>x.classList.toggle('sel',x===b)); }); $('#set').onclick=()=>toast('Reminder set. Congratulations!'); }
@@ -654,7 +739,7 @@ SC.clinical = { r:()=>{ const c={
     <div class="art care">${I.info}</div>
     <h1 class="say">${c[0]}</h1>
     <p class="lead" style="margin-top:10px">${c[1]}</p>
-    <div class="card"><h3>Other UPS benefits</h3><p>Your UPS plan includes a nurse line, wellness coaching and an employee assistance program.</p></div>
+    <div class="card upsb"><h3>${UPS(16)}Other UPS benefits</h3><p>Your UPS plan includes a nurse line, wellness coaching and an employee assistance program.</p></div>
     ${S.reason!=='weight'?'<div class="card outline"><h3>Think we got it wrong?</h3><p>A Virta clinician can talk through your situation with you.</p></div>':''}
   </div>
   <div class="dock"><button class="btn dark" id="talk">Talk to a person</button></div>`; },
@@ -667,7 +752,7 @@ SC.age80 = { r:()=>`
     <div class="art care">${I.info}</div>
     <h1 class="say">Virta is designed for adults up to age 80.</h1>
     <p class="lead" style="margin-top:10px">Care for older adults often needs a different approach. Your UPS plan has other support that may fit better.</p>
-    <div class="card"><h3>Other UPS benefits</h3><p>A nurse line, care navigation and wellness coaching through your UPS plan.</p></div>
+    <div class="card upsb"><h3>${UPS(16)}Other UPS benefits</h3><p>A nurse line, care navigation and wellness coaching through your UPS plan.</p></div>
   </div>
   <div class="dock"><button class="btn dark" id="talk">Talk to a person</button></div>`,
   b:()=>{ $('#talk').onclick=help; }
@@ -679,7 +764,7 @@ function show(id){ cur=id; render(); }
 function back(){ if(hist.length){ cur=hist.pop(); render(); } }
 function render(){
   clearInterval(timer); clearTimeout(loadT); closeSheet(); $('#toast').classList.remove('on');
-  const s=SC[cur]; $('#app').innerHTML=s.r();
+  const s=SC[cur], scr=$('.screen'); scr.dataset.brand=brand(); scr.dataset.page=cur; $('#app').innerHTML=s.r();
   const bk=$('#back'); bk&&(bk.onclick=back);
   const hp=$('#help'); hp&&(hp.onclick=help);
   $$('[data-why]').forEach(b=>b.onclick=()=>why(b.dataset.why));
