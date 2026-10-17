@@ -1,0 +1,727 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Virta Guide Prototype</title>
+<!-- Virta Guide, Phase 1 enrollment prototype for the UPS x Virta case study. Edit freely: screens are defined in the SC object in the script below; go(id) navigates. -->
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --care:#1450F5; --care-deep:#0B33A8; --care-soft:#EAF0FF;
+  --ink:#0D1A33; --ink-2:#56617A; --ink-3:#8A93A8;
+  --line:#E4E8F0; --fill:#F3F5F9; --page:#E9EDF4; --white:#fff;
+  --umber:#3B2418; --gold:#F5B21B; --umber-soft:#FFF7E6;
+  --go:#1F8A5B; --go-soft:#E5F5EC; --wait:#A86400; --wait-soft:#FFF3DE;
+  --plum:#5B2BC4; --plum-soft:#F2EBFF; --err:#C2410C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Figtree,system-ui,sans-serif;color:var(--ink);background:var(--page);line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:10px}
+
+.stage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 16px}
+.device{width:390px;height:844px;background:#0E1424;border-radius:56px;padding:12px;box-shadow:0 40px 90px -40px rgba(13,26,51,.6)}
+.screen{position:relative;width:100%;height:100%;background:var(--white);border-radius:44px;overflow:hidden;overflow:clip;display:flex;flex-direction:column}
+.statusbar{height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 30px;font-size:14px;font-weight:700}
+.statusbar i{width:112px;height:31px;background:#0E1424;border-radius:20px;display:block}
+.restart{font-size:13px;font-weight:600;color:var(--ink-2);border:1px solid #CDD4E1;border-radius:999px;padding:7px 14px;background:#fff}
+#app{flex:1;display:flex;flex-direction:column;min-height:0}
+
+/* header: back · section + progress · help */
+.hdr{flex:none;display:grid;grid-template-columns:44px 1fr 64px;align-items:center;padding:4px 16px 10px;min-height:54px}
+.hdr .back{width:40px;height:40px;border-radius:50%;background:var(--fill);display:grid;place-items:center}
+.hdr .back svg{width:18px;height:18px}
+.hdr .back[hidden]{visibility:hidden;display:grid}
+.hdr .mid{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sec{font-size:13.5px;font-weight:700}
+.dots{display:flex;gap:4px}
+.dots span{width:7px;height:4px;border-radius:4px;background:var(--line);transition:all .3s}
+.dots span.done{background:var(--care)}
+.dots span.on{width:22px;background:var(--care)}
+.help{justify-self:end;font-size:14px;font-weight:600;padding:8px 2px}
+
+.brandrow{display:flex;align-items:center;gap:6px}
+.logo{border:1.5px dashed currentColor;border-radius:6px;font-size:10px;font-weight:700;padding:5px 7px;line-height:1;white-space:nowrap}
+.logo.ups{color:var(--umber);background:var(--umber-soft)}
+.logo.virta{color:var(--care)}
+.x{font-size:11px;color:var(--ink-3)}
+.chip-ups{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--umber);background:var(--umber-soft);border-radius:999px;padding:5px 11px}
+.chip-ups::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold)}
+
+.content{flex:1;overflow-y:auto;padding:8px 24px 16px;scrollbar-width:none}
+.content::-webkit-scrollbar{display:none}
+.dock{flex:none;padding:12px 20px 26px;display:flex;flex-direction:column;gap:10px}
+
+/* Guide message: speaker + question on top, answers docked in the thumb zone */
+.gm{display:flex;flex-direction:column;gap:10px}
+.speaker{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--care-deep)}
+.orb{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#9DB6FF,var(--care) 58%,var(--care-deep));box-shadow:0 0 0 4px var(--care-soft);flex:none}
+.say{font-size:26px;line-height:1.18;font-weight:700;letter-spacing:-.018em}
+.say.xl{font-size:31px;font-weight:800;letter-spacing:-.025em;line-height:1.1}
+.lead{font-size:16px;color:var(--ink-2)}
+.ask{font-size:16px;font-weight:600;margin-top:2px}
+.why{align-self:flex-start;font-size:14px;font-weight:600;color:var(--care);display:inline-flex;align-items:center;gap:6px;padding:2px 0}
+.why::before{content:"?";width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:11px;font-weight:800}
+
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--fill);border:1.5px solid transparent;border-radius:16px;padding:16px;font-size:16px;font-weight:600;transition:background .15s,border-color .15s}
+.opt:hover{background:#ECEFF5}
+.opt .lbl{flex:1}
+.opt small{display:block;font-weight:500;font-size:13px;color:var(--ink-2);margin-top:2px}
+.opt.sel{background:var(--care-soft);border-color:var(--care)}
+.box{width:22px;height:22px;border-radius:7px;border:2px solid #C6CEDD;background:#fff;flex:none}
+.sel>.box{border-color:var(--care);background:var(--care) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E") no-repeat center/14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2 .opt{justify-content:center;text-align:center}
+.hint{font-size:13.5px;color:var(--ink-2)}
+
+.btn{display:block;width:100%;border-radius:16px;padding:17px;font-size:16.5px;font-weight:700;text-align:center}
+.btn.primary{background:var(--care);color:#fff}
+.btn.primary:disabled{background:#C9D5F5;cursor:not-allowed}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.quiet{color:var(--care);padding:10px}
+.fine{font-size:13px;color:var(--ink-2);text-align:center}
+
+.fields{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fbox{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:9px 14px}
+.fbox:focus-within{border-color:var(--care);box-shadow:0 0 0 3px var(--care-soft)}
+.fbox label{display:block;font-size:12px;font-weight:600;color:var(--ink-2)}
+.fbox input,.fbox select{width:100%;border:0;outline:0;background:transparent;font-size:17px;font-weight:600;padding-top:2px;appearance:none}
+.fbox.err{border-color:var(--err);background:#FFF8F4}
+.check{display:flex;gap:12px;align-items:center;font-size:15px;text-align:left;margin-top:6px;width:100%}
+.inl{color:var(--care);font-weight:600;font-size:inherit;padding:0}
+
+/* landing */
+.endorse{flex:none;background:var(--umber);color:#fff;font-size:12.5px;font-weight:600;padding:9px 24px;display:flex;gap:8px;align-items:center}
+.endorse::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.land-top{display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px}
+.hero{height:172px;border-radius:24px;margin:8px 0 20px;position:relative;overflow:hidden;background:
+ radial-gradient(84px 84px at 72% 44%, #F0C49C 0 42%, transparent 43%),
+ radial-gradient(160px 110px at 70% 120%, #2D3E6E 0 60%, transparent 61%),
+ linear-gradient(160deg,#D5E0FF,#A5BBF7)}
+.hero span{position:absolute;left:12px;bottom:12px;font-size:11px;background:rgba(255,255,255,.92);border-radius:8px;padding:3px 8px;color:var(--ink-2)}
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
+.trust div{background:var(--fill);border-radius:14px;padding:12px 10px;font-size:13px;font-weight:600;line-height:1.25}
+.trust b{display:block;font-size:17px;color:var(--care-deep);margin-bottom:2px}
+.links{display:flex;justify-content:center;gap:22px}
+.links button{font-size:14.5px;font-weight:600;color:var(--care)}
+
+/* states */
+.art{width:72px;height:72px;border-radius:24px;display:grid;place-items:center;margin:14px 0 22px}
+.art svg{width:36px;height:36px}
+.art.go{background:var(--go-soft);color:var(--go)}
+.art.wait{background:var(--wait-soft);color:var(--wait)}
+.art.plum{background:var(--plum-soft);color:var(--plum)}
+.art.care{background:var(--care-soft);color:var(--care)}
+.art.ups{background:var(--umber-soft);color:var(--umber)}
+.pill{display:inline-flex;font-size:13px;font-weight:700;border-radius:999px;padding:5px 11px;margin-bottom:12px;background:var(--go-soft);color:var(--go)}
+.rows{display:flex;flex-direction:column;gap:18px;margin-top:24px}
+.rows .r{display:grid;grid-template-columns:40px 1fr;gap:14px}
+.rows .ic{width:40px;height:40px;border-radius:12px;background:var(--fill);display:grid;place-items:center;color:var(--care-deep)}
+.rows .ic svg{width:20px;height:20px}
+.rows b{display:block;font-size:15.5px}
+.rows span{font-size:14px;color:var(--ink-2)}
+.steps{list-style:none;margin-top:24px}
+.steps li{position:relative;padding:0 0 20px 32px;font-size:15.5px;font-weight:700}
+.steps li small{display:block;font-weight:500;color:var(--ink-2);font-size:14px}
+.steps li::before{content:"";position:absolute;left:4px;top:5px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--line)}
+.steps li::after{content:"";position:absolute;left:9.5px;top:21px;bottom:3px;width:1.5px;background:var(--line)}
+.steps li:last-child::after{display:none}
+.steps li.done::before{background:var(--go);box-shadow:0 0 0 2px var(--go)}
+.steps li.now::before{background:var(--care);box-shadow:0 0 0 2px var(--care),0 0 0 6px var(--care-soft)}
+.card{background:var(--fill);border-radius:18px;padding:16px;margin-top:16px}
+.card h3{font-size:15.5px;margin-bottom:3px}
+.card p{font-size:14px;color:var(--ink-2)}
+.outline{border:1.5px solid var(--line);background:#fff}
+
+.loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 40px;text-align:center}
+.spin{width:54px;height:54px;border-radius:50%;border:4px solid var(--care-soft);border-top-color:var(--care);animation:sp .9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading p{font-size:18px;font-weight:700}
+.loading small{font-size:14px;color:var(--ink-2);display:block;margin-top:4px;font-weight:500}
+
+.idcard{margin-top:18px;border-radius:16px;background:linear-gradient(135deg,#F7F9FD,#E8EEFA);border:1px solid var(--line);padding:14px 16px;font-size:12px;color:var(--ink-2)}
+.idcard .t{font-weight:800;color:var(--ink);font-size:13px;margin-bottom:10px}
+.idcard .l{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.idcard .hl{outline:2px solid var(--care);outline-offset:3px;border-radius:4px;color:var(--care-deep);font-weight:800;display:inline-block}
+.idcard i{display:block;height:7px;border-radius:4px;background:#D3DAE8;margin-top:3px}
+
+.otp{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:24px;cursor:text}
+.otp div{height:58px;border-radius:14px;background:var(--fill);display:grid;place-items:center;font-size:24px;font-weight:800;border:1.5px solid transparent}
+.otp div.cur{border-color:var(--care);background:#fff}
+.otp-input{position:absolute;opacity:0;width:1px;height:1px}
+.suggest{align-self:center;display:inline-flex;gap:8px;align-items:center;background:var(--fill);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600}
+.suggest b{color:var(--care-deep)}
+.resend{font-size:14px;color:var(--ink-2);text-align:center;margin-top:18px}
+
+.give{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.give div{border-radius:16px;padding:14px;font-size:14px}
+.give .a{background:var(--fill)} .give .g{background:var(--care-soft)}
+.give h3{font-size:14px;margin-bottom:8px}
+.give ul{padding-left:16px;display:flex;flex-direction:column;gap:4px}
+.consents{margin-top:16px;border:1.5px solid var(--line);border-radius:18px;overflow:hidden}
+.consents .check{padding:14px 16px;margin:0}
+.consents .check+.check{border-top:1px solid var(--line)}
+
+.doc{display:flex;gap:14px;align-items:center;background:var(--fill);border-radius:18px;padding:14px;margin-top:20px}
+.doc .av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F3D3B8,#C98F6A);display:grid;place-items:center;font-weight:800;color:#5B3420;flex:none}
+.doc b{display:block;font-size:15.5px}
+.doc span{font-size:13.5px;color:var(--ink-2)}
+.days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:20px}
+.day{border-radius:14px;background:var(--fill);padding:9px 0;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.day b{display:block;font-size:18px;color:var(--ink)}
+.day.sel{background:var(--care);color:#E3EBFF}
+.day.sel b{color:#fff}
+.tgroup{margin-top:18px}
+.tgroup h4{font-size:14px;color:var(--ink-2);font-weight:700;margin-bottom:8px}
+.times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.time{border:1.5px solid var(--line);border-radius:12px;padding:11px 0;text-align:center;font-weight:700;font-size:14.5px;background:#fff}
+.time.sel{border-color:var(--care);background:var(--care-soft);color:var(--care-deep)}
+
+.scrim{position:absolute;inset:0;background:rgba(13,26,51,.42);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:30px 30px 0 0;padding:12px 24px 30px;transform:translateY(105%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s;z-index:6;max-height:84%;overflow:auto}
+.sheet.on{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.grab{width:42px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 18px}
+.sheet h3{font-size:21px;letter-spacing:-.01em;margin-bottom:8px}
+.sheet p{font-size:15.5px;color:var(--ink-2);margin-bottom:12px}
+.sheet .who{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;color:var(--care-deep);background:var(--care-soft);border-radius:14px;padding:12px 14px;margin:4px 0 18px}
+.sheet .who svg{width:18px;height:18px;flex:none}
+.sheet ol{padding-left:20px;color:var(--ink-2);font-size:15px;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.hopts{display:flex;flex-direction:column;gap:10px;margin:8px 0 14px}
+.hopts button{text-align:left;background:var(--fill);border-radius:16px;padding:15px 16px;font-weight:700;font-size:15.5px}
+.hopts small{display:block;font-weight:500;color:var(--ink-2);font-size:13px}
+.toast{position:absolute;left:20px;right:20px;top:104px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;z-index:7;opacity:0;transform:translateY(-8px);transition:all .25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+.fadein{animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fadein,.spin{animation:none}.sheet,.scrim,.toast,.dots span{transition:none}}
+@media (max-width:820px){
+  .stage{padding:0;display:block}
+  .device{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .screen{border-radius:0}
+  .statusbar,.restart{display:none}
+}
+</style>
+<div class="stage">
+  <div class="device">
+    <div class="screen">
+      <div class="statusbar">9:41 <i></i> 5G</div>
+      <div id="app"></div>
+      <div class="scrim" id="scrim"></div>
+      <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+  </div>
+  <button class="restart" id="restart">Restart walkthrough</button>
+</div>
+
+<script>
+const I = {
+  back:'<svg viewBox="0 0 20 20"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  shield:'<svg viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.4-3 8.2-7 9.5-4-1.3-7-5.1-7-9.5V6z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8.5v6M9 11.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  lock:'<svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  building:'<svg viewBox="0 0 24 24"><path d="M4 20V8l8-4 8 4v12M9 20v-5h6v5M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  heart:'<svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5.5M12 7.6v.4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  q:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5v.5M12 16.6v.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
+};
+
+const fresh = () => ({entry:null, glp:null, ft:'5', inch:'9', lb:'228', age:null,
+  first:'Dana', last:'Whitfield', dob:'03/14/1981', zip:'40213', dependent:false, mid:'',
+  phone:'(502) 555-0147', remind:false, otp:'', conds:[], meds:[], review:[], care:false, priv:false,
+  day:1, slot:null, reminder:'12', reason:null, retried:false, later:false});
+let S = fresh(), hist = [], cur = 'landing', timer = null, loadT = null;
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SECTIONS = ['Quick check','Coverage','Your health','Join'];
+
+const WHY = {
+  entry:['Why we ask what brings you here','Virta treats a few related conditions. Your answer helps us ask only what matters to you.','Nothing is saved yet'],
+  measures:['Why we ask your height and weight','Virta\'s weight program is for adults at a BMI of 27 or more. You won\'t see a number or a label. We just do the math.','Stays on your phone until you create an account'],
+  age:['Why we ask your age','Virta is for adults from 18 to 80. A range is all we need.','Stays on your phone until you create an account'],
+  glp:['Why we ask about your GLP-1','If you take one now, your Virta clinician will coordinate with your current prescriber so nothing changes suddenly.','Seen only by your Virta care team'],
+  coverage:['Why we need these details','UPS shares a list of people on its health plans with Virta. We match your name and birthday to that list to confirm your coverage.','UPS will never see your health answers'],
+  conds:['Why we ask about these','Virta\'s eating plan isn\'t safe during pregnancy, with advanced kidney disease, or soon after DKA. "Not sure" never counts against you. A clinician will check.','Seen only by your Virta care team'],
+  meds:['Why we ask about medicines','Some diabetes medicines need to be lowered as your blood sugar improves. Your clinician uses this to keep you safe from day one.','Seen only by your Virta care team'],
+  labs:['Why we ask about lab tests','Your clinician needs a recent A1c to plan your care. No test? We\'ll send you a free lab order.','Seen only by your Virta care team'],
+  phone:['Why we use your phone','It\'s your login, so there\'s no password to create. We\'ll also text you a link to pick up where you left off.','Used only for your Virta account']
+};
+
+const hdr = (o={}) => {
+  const mid = o.virta ? `<span class="logo virta">Virta logo</span>`
+    : `<span class="sec">${SECTIONS[o.sec]}</span><div class="dots">${SECTIONS.map((_,i)=>`<span class="${i<o.sec?'done':i===o.sec?'on':''}"></span>`).join('')}</div>`;
+  return `<div class="hdr"><button class="back" id="back" aria-label="Back" ${o.noBack||!hist.length?'hidden':''}>${I.back}</button><div class="mid">${mid}</div><button class="help" id="help">Help</button></div>`;
+};
+const guide = (say, extra='', whyKey) => `<div class="gm"><div class="speaker"><span class="orb" aria-hidden="true"></span>Virta Guide</div><h1 class="say">${say}</h1>${extra}${whyKey?`<button class="why" data-why="${whyKey}">Why do we ask?</button>`:''}</div>`;
+const opt = (v, label, sub, sel) => `<button class="opt${sel?' sel':''}" data-a="${esc(v)}"><span class="lbl">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span></button>`;
+const tick = (v, label, sub, sel) => `<button class="opt${sel?' sel':''}" data-t="${esc(v)}"><span class="box"></span><span class="lbl">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span></button>`;
+const field = (id, label, val, attrs='') => `<div class="fbox"><label for="${id}">${label}</label><input id="${id}" value="${esc(val)}" ${attrs}></div>`;
+
+function onAnswer(fn){ $$('[data-a]').forEach(b=>b.onclick=()=>{ $$('[data-a]').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); setTimeout(()=>fn(b.dataset.a),180); }); }
+function multi(key, noneVal, btnId){
+  const upd=()=>{ $('#'+btnId).disabled = S[key].length===0; };
+  $$('[data-t]').forEach(b=>b.onclick=()=>{
+    const v=b.dataset.t;
+    if (v===noneVal) S[key] = S[key].includes(v)?[]:[v];
+    else { S[key]=S[key].filter(x=>x!==noneVal); S[key] = S[key].includes(v) ? S[key].filter(x=>x!==v) : [...S[key], v]; }
+    $$('[data-t]').forEach(x=>x.classList.toggle('sel',S[key].includes(x.dataset.t)));
+    upd();
+  });
+  upd();
+}
+const addReview = r => { if(!S.review.includes(r)) S.review.push(r); };
+
+const SC = {};
+
+SC.landing = { r:()=>`
+  <div class="endorse">A $0 benefit of your UPS health plan</div>
+  <div class="land-top"><div class="brandrow"><span class="logo ups">UPS logo</span><span class="x">×</span><span class="logo virta">Virta logo</span></div><button class="help" id="help">Help</button></div>
+  <div class="content fadein">
+    <div class="hero" role="img" aria-label="Photo placeholder"><span>Photo: UPS hub supervisor, end of shift</span></div>
+    <h1 class="say xl">Lower your blood sugar and lose weight, with a care team on your side.</h1>
+    <p class="lead" style="margin-top:12px">A medical program built around real food. Covered by your UPS health plan.</p>
+    <div class="trust"><div><b>$0</b>covered by UPS</div><div><b>1:1</b>doctor and coach</div><div><b>Private</b>UPS never sees your health info</div></div>
+  </div>
+  <div class="dock">
+    <button class="btn primary" id="start">See if I qualify</button>
+    <p class="fine">About 2 minutes. No ID or account needed to check.</p>
+    <div class="links"><button id="how">How it works</button><button id="legit">Is this from UPS?</button></div>
+  </div>`,
+  b:()=>{
+    $('#start').onclick=()=>go('entry');
+    $('#how').onclick=()=>sheet(`<h3>How Virta works</h3><ol><li>Answer a few questions and confirm your UPS coverage.</li><li>Meet your Virta clinician by video.</li><li>Get a connected scale and meter, plus a coach who checks in daily in the app.</li></ol><div class="card" style="margin:0 0 18px"><h3>What it takes</h3><p>About 10 minutes a day, changes to what you eat, and a year for lasting results. Members see a 1.0 point average drop in A1c and 7% average weight loss.</p></div><button class="btn primary" data-close>Got it</button>`);
+    $('#legit').onclick=()=>sheet(`<h3>Yes, this is a UPS benefit</h3><p>UPS added Virta to its health plans. Two ways to check:</p><ol><li>Find Virta on your UPS benefits portal.</li><li>Call the number on your health plan card.</li></ol><div class="who">${I.lock} We never ask for your Social Security number, bank details or a payment.</div><button class="btn primary" data-close>Got it</button>`);
+  }
+};
+
+SC.entry = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">${guide("Hi, I'm your Virta Guide. What brings you here?", `<p class="lead">I'll ask a few quick questions to see if Virta fits. Nothing is saved until you create an account.</p>`, 'entry')}</div>
+  <div class="dock">
+    ${opt('t2d','I have type 2 diabetes','',S.entry==='t2d')}
+    ${opt('pre','I have prediabetes or high blood sugar','',S.entry==='pre')}
+    ${opt('wt','I want to lose weight','',S.entry==='wt')}
+    ${opt('glp','I take a GLP-1','Ozempic, Wegovy, Mounjaro, Zepbound or others',S.entry==='glp')}
+  </div>`,
+  b:()=>onAnswer(v=>{ S.entry=v; go(v==='glp'?'glp':'measures'); })
+};
+
+SC.glp = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">${guide('Virta can help you get more from your GLP-1.', `<p class="lead">Our clinicians prescribe and manage GLP-1s, and pair them with a food plan so results last.</p><p class="ask">Where are you with it today?</p>`, 'glp')}</div>
+  <div class="dock">
+    ${opt('now','Taking one now','We\'ll coordinate with your current prescriber',S.glp==='now')}
+    ${opt('start','Interested in starting','',S.glp==='start')}
+    ${opt('stopped','I took one and stopped','',S.glp==='stopped')}
+  </div>`,
+  b:()=>onAnswer(v=>{ S.glp=v; go('measures'); })
+};
+
+SC.measures = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">
+    ${guide("What's your starting point?", '', 'measures')}
+    <div class="fields">
+      <div class="row2">
+        <div class="fbox"><label for="ft">Height, feet</label><select id="ft">${[4,5,6,7].map(n=>`<option ${S.ft==n?'selected':''}>${n}</option>`).join('')}</select></div>
+        <div class="fbox"><label for="inch">Inches</label><select id="inch">${[...Array(12).keys()].map(n=>`<option ${S.inch==n?'selected':''}>${n}</option>`).join('')}</select></div>
+      </div>
+      ${field('lb','Weight, pounds',S.lb,'inputmode="numeric" autocomplete="off"')}
+    </div>
+  </div>
+  <div class="dock"><button class="btn primary" id="next">Continue</button></div>`,
+  b:()=>{
+    const upd=()=>{ $('#next').disabled=!(+$('#lb').value>60); };
+    $('#lb').oninput=upd; upd();
+    $('#next').onclick=()=>{
+      S.ft=$('#ft').value; S.inch=$('#inch').value; S.lb=$('#lb').value;
+      const inches=(+S.ft)*12+(+S.inch), bmi=703*(+S.lb)/(inches*inches);
+      go(bmi<27 && (S.entry==='wt'||S.entry==='glp') ? 'weightNoFit' : 'age');
+    };
+  }
+};
+
+SC.weightNoFit = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">${guide("Virta's weight program may not fit right now.", `<p class="lead">It's designed for people at a higher weight than you shared. You might still qualify another way. Do either of these apply?</p>`)}</div>
+  <div class="dock">${opt('pre','I have prediabetes or high blood sugar')}${opt('t2d','I have type 2 diabetes')}${opt('none','Neither')}</div>`,
+  b:()=>onAnswer(v=>{ if(v==='none'){ S.reason='weight'; return go('clinical'); } S.entry=v; go('age'); })
+};
+
+SC.age = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">${guide('Last one. How old are you?', '', 'age')}</div>
+  <div class="dock"><div class="grid2">${opt('18','18–39','',S.age==='18')}${opt('40','40–64','',S.age==='40')}${opt('65','65–80','',S.age==='65')}${opt('80','Over 80','',S.age==='80')}</div></div>`,
+  b:()=>onAnswer(v=>{ S.age=v; if(v==='80') return go('age80'); loading('Checking your answers…','',()=>show('likely')); })
+};
+
+SC.likely = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">
+    <div class="art go">${I.check}</div>
+    <span class="pill">You likely qualify</span>
+    <h1 class="say">Good news. Virta looks like a fit, at no cost to you.</h1>
+    <p class="lead" style="margin-top:10px">Here's what's next. About 5 minutes, and you can stop anytime.</p>
+    <ul class="steps">
+      <li class="now">Confirm your UPS coverage<small>Your name and birthday</small></li>
+      <li>3 health questions<small>Only your care team sees them</small></li>
+      <li>Book your first visit<small>At a time that fits your shift</small></li>
+    </ul>
+  </div>
+  <div class="dock"><button class="btn primary" id="next">Confirm my coverage</button><button class="btn quiet" id="later">Text me a link for later</button></div>`,
+  b:()=>{ $('#next').onclick=()=>go('coverage'); $('#later').onclick=()=>go('linkSent'); }
+};
+
+SC.linkSent = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">
+    ${guide('Where should I text your link?', `<p class="lead">It brings you right back here. Nothing else is saved.</p>`)}
+    <div class="fields">${field('ph','Mobile number',S.phone,'inputmode="tel" autocomplete="tel"')}</div>
+  </div>
+  <div class="dock"><button class="btn primary" id="send">Text me the link</button><button class="btn quiet" id="cont">Keep going now</button></div>`,
+  b:()=>{ $('#send').onclick=()=>{ S.phone=$('#ph').value; toast('Link sent. See you soon.'); }; $('#cont').onclick=()=>go('coverage'); }
+};
+
+SC.coverage = { r:()=>`
+  ${hdr({sec:1})}
+  <div class="content fadein">
+    <div class="art ups" style="margin-top:4px">${I.shield}</div>
+    ${guide("Let's make sure you're covered.", `<p class="lead">With your name and birthday, we can find your UPS health plan.</p>`, 'coverage')}
+    <div class="fields">
+      ${field('first','Legal first name',S.first,'autocomplete="given-name"')}
+      ${field('last','Legal last name',S.last,'autocomplete="family-name"')}
+      <div class="row2">${field('dob','Birthday',S.dob,'inputmode="numeric" placeholder="MM/DD/YYYY" autocomplete="bday"')}${field('zip','ZIP code',S.zip,'inputmode="numeric" autocomplete="postal-code"')}</div>
+      <button class="check ${S.dependent?'sel':''}" id="dep"><span class="box"></span>I'm covered as a spouse or dependent</button>
+    </div>
+  </div>
+  <div class="dock"><button class="btn primary" id="next">Find my coverage</button><button class="btn quiet" id="useId">Use my member ID instead</button></div>`,
+  b:()=>{
+    const ids=['first','last','dob','zip'];
+    const upd=()=>{ $('#next').disabled=ids.some(i=>!$('#'+i).value.trim()); };
+    ids.forEach(i=>$('#'+i).oninput=upd); upd();
+    $('#dep').onclick=e=>{ S.dependent=!S.dependent; e.currentTarget.classList.toggle('sel',S.dependent); };
+    $('#useId').onclick=()=>{ ids.forEach(i=>S[i]=$('#'+i).value.trim()); go('memberId'); };
+    $('#next').onclick=()=>{
+      ids.forEach(i=>S[i]=$('#'+i).value.trim());
+      const match = S.retried || S.last.toLowerCase()==='whitfield';
+      loading('Checking with your UPS plan…','This takes a few seconds',()=>show(match?'phone':'nomatch'));
+    };
+  }
+};
+
+SC.memberId = { r:()=>`
+  ${hdr({sec:1})}
+  <div class="content fadein">
+    ${guide('Enter your member ID.', `<p class="lead">It's on the front of your health plan card. Your UPS employee ID from your pay stub works too.</p>`)}
+    <div class="idcard" aria-hidden="true"><div class="t">UPS Health Plan</div><div class="l"><div>Member<i style="width:80%"></i></div><div>Member ID<br><span class="hl">UPS0482117</span></div><div>Group<i style="width:60%"></i></div><div>Plan<i style="width:70%"></i></div></div></div>
+    <div class="fields">${field('mid','Member ID or employee ID',S.mid,'autocomplete="off" placeholder="e.g. UPS0482117"')}</div>
+  </div>
+  <div class="dock"><button class="btn primary" id="next">Find my coverage</button></div>`,
+  b:()=>{
+    const upd=()=>{ $('#next').disabled=$('#mid').value.trim().length<5; };
+    $('#mid').oninput=upd; upd();
+    $('#next').onclick=()=>{ S.mid=$('#mid').value.trim(); loading('Checking with your UPS plan…','This takes a few seconds',()=>show('phone')); };
+  }
+};
+
+SC.nomatch = { r:()=>`
+  ${hdr({sec:1})}
+  <div class="content fadein">
+    ${guide("We couldn't find you yet.", `<p class="lead">This usually happens when a name is different from UPS's records.</p>`)}
+    <div class="fields">
+      <div class="fbox err"><label for="last2">Legal last name</label><input id="last2" value="${esc(S.last)}"></div>
+      <p class="hint">Try the name on your pay stub, including any hyphen or second last name.</p>
+    </div>
+    <div class="card"><h3>Rather keep going?</h3><p>Finish now and our team will confirm your coverage within 1 business day. We'll text you.</p><button class="btn quiet" id="later" style="text-align:left;padding:10px 0 0">Continue and verify later</button></div>
+  </div>
+  <div class="dock"><button class="btn primary" id="retry">Try again</button><button class="btn quiet" id="useId">Use my member ID instead</button><button class="btn quiet" id="notplan" style="padding-top:0">I'm not sure I'm on a UPS plan</button></div>`,
+  b:()=>{
+    $('#retry').onclick=()=>{ S.last=$('#last2').value.trim(); S.retried=true; loading('Checking with your UPS plan…','',()=>show('phone')); };
+    $('#later').onclick=()=>{ S.later=true; go('phone'); };
+    $('#useId').onclick=()=>go('memberId');
+    $('#notplan').onclick=()=>go('notPlan');
+  }
+};
+
+SC.notPlan = { r:()=>`
+  ${hdr({sec:1})}
+  <div class="content fadein">${guide("Let's sort out your coverage.", `<p class="lead">Virta is covered for people on a UPS health plan, including spouses and dependents.</p>`)}</div>
+  <div class="dock">
+    ${opt('check','Check with UPS benefits','We\'ll save your spot for 30 days')}
+    ${opt('other','I\'m covered by another plan','A spouse\'s employer may offer Virta too')}
+    ${opt('pay','Pay for Virta myself','See monthly pricing')}
+    <button class="btn quiet" id="talk">Talk to a person</button>
+  </div>`,
+  b:()=>{ onAnswer(v=>toast(v==='check'?'Spot saved. We\'ll text you a reminder.':v==='other'?'Opening the plan finder…':'Opening pricing…')); $('#talk').onclick=help; }
+};
+
+SC.phone = { r:()=>`
+  ${hdr({sec:1})}
+  <div class="content fadein">
+    <span class="chip-ups" style="margin:6px 0 16px">${S.later?'Coverage check in progress':'Covered by your UPS plan'}</span>
+    ${guide(`${S.later?'Thanks':"You're covered"}, ${esc(S.first||'there')}. Let's save your spot.`, `<p class="lead">We'll text you a code to create your account. No password needed.</p>`, 'phone')}
+    <div class="fields">
+      ${field('ph','Mobile number',S.phone,'inputmode="tel" autocomplete="tel"')}
+      <button class="check ${S.remind?'sel':''}" id="remind"><span class="box"></span>Text me reminders about my application (optional)</button>
+    </div>
+  </div>
+  <div class="dock"><button class="btn primary" id="next">Text me a code</button></div>`,
+  b:()=>{
+    const upd=()=>{ $('#next').disabled=$('#ph').value.replace(/\D/g,'').length<10; };
+    $('#ph').oninput=upd; upd();
+    $('#remind').onclick=e=>{ S.remind=!S.remind; e.currentTarget.classList.toggle('sel',S.remind); };
+    $('#next').onclick=()=>{ S.phone=$('#ph').value; S.otp=''; go('code'); };
+  }
+};
+
+SC.code = { r:()=>`
+  ${hdr({sec:1})}
+  <div class="content fadein">
+    ${guide('Enter the code we texted you.', `<p class="lead">Sent to ${esc(S.phone)}.</p>`)}
+    <label class="otp" for="otp" id="otpBoxes">${[...Array(6)].map((_,i)=>`<div class="${i===S.otp.length?'cur':''}">${S.otp[i]||''}</div>`).join('')}</label>
+    <input class="otp-input" id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="6-digit code" value="${esc(S.otp)}">
+    <p class="resend" id="resend">Resend code in 0:30</p>
+  </div>
+  <div class="dock"><button class="suggest" id="fill">From Messages <b>482916</b></button><button class="btn primary" id="next">Verify</button></div>`,
+  b:()=>{
+    const inp=$('#otp');
+    const draw=()=>{ S.otp=inp.value.replace(/\D/g,'').slice(0,6); $$('#otpBoxes div').forEach((d,i)=>{ d.textContent=S.otp[i]||''; d.classList.toggle('cur',i===S.otp.length); }); $('#next').disabled=S.otp.length!==6; };
+    inp.oninput=draw; draw();
+    $('#fill').onclick=()=>{ inp.value='482916'; draw(); };
+    let s=30; timer=setInterval(()=>{ s--; const r=$('#resend'); if(!r) return clearInterval(timer); r.textContent = s>0?`Resend code in 0:${String(s).padStart(2,'0')}`:'Resend code'; if(s<=0) clearInterval(timer); },1000);
+    $('#next').onclick=()=>go('privacy');
+  }
+};
+
+SC.privacy = { r:()=>`
+  ${hdr({sec:2})}
+  <div class="content fadein">
+    <div class="art care">${I.shield}</div>
+    <h1 class="say">Your health answers stay with your care team.</h1>
+    <div class="rows">
+      <div class="r"><div class="ic">${I.lock}</div><div><b>Only your Virta care team sees them</b><span>Your doctor and coach use them to plan safe care.</span></div></div>
+      <div class="r"><div class="ic">${I.building}</div><div><b>UPS never does</b><span>UPS only sees combined program results, never names or health details.</span></div></div>
+      <div class="r"><div class="ic">${I.q}</div><div><b>"Not sure" is always OK</b><span>It never counts against you. A clinician will check.</span></div></div>
+    </div>
+  </div>
+  <div class="dock"><button class="btn primary" id="next">Start health questions</button><p class="fine">3 questions, about 2 minutes</p></div>`,
+  b:()=>{ $('#next').onclick=()=>go('h_conds'); }
+};
+
+SC.h_conds = { r:()=>`
+  ${hdr({sec:2})}
+  <div class="content fadein">${guide('Do any of these apply to you right now?', `<p class="hint">Choose all that apply.</p>`, 'conds')}</div>
+  <div class="dock">
+    ${[['preg','Pregnant or nursing',''],['ckd','Kidney disease, stage 4 or 5, or dialysis',''],['ckdEarly','Kidney disease, early stage or not sure',''],['dka','Treated for DKA in the past 12 months','Diabetic ketoacidosis'],['none','None of these','']].map(c=>tick(c[0],c[1],c[2],S.conds.includes(c[0]))).join('')}
+    <button class="btn primary" id="next">Continue</button>
+  </div>`,
+  b:()=>{
+    multi('conds','none','next');
+    $('#next').onclick=()=>{
+      const c=S.conds;
+      if(c.includes('preg')) return go('pregnancy');
+      if(c.includes('ckd')){ S.reason='kidney'; return go('clinical'); }
+      if(c.includes('dka')){ S.reason='dka'; return go('clinical'); }
+      if(c.includes('ckdEarly')) addReview('kidney');
+      go('h_meds');
+    };
+  }
+};
+
+SC.h_meds = { r:()=>`
+  ${hdr({sec:2})}
+  <div class="content fadein">${guide('Which diabetes medicines do you take now?', `<p class="hint">Choose all that apply.</p>`, 'meds')}</div>
+  <div class="dock">
+    ${['Metformin','Insulin','A GLP-1','Something else','None'].map(m=>tick(m,m,'',S.meds.includes(m))).join('')}
+    <button class="btn primary" id="next">Continue</button>
+  </div>`,
+  b:()=>{ multi('meds','None','next'); $('#next').onclick=()=>{ if(S.meds.includes('Insulin')) addReview('insulin'); go('h_labs'); }; }
+};
+
+SC.h_labs = { r:()=>`
+  ${hdr({sec:2})}
+  <div class="content fadein">${guide('Have you had an A1c blood test in the last 6 months?', '', 'labs')}</div>
+  <div class="dock">${opt('yes','Yes')}${opt('no','No')}${opt('unsure','Not sure')}</div>`,
+  b:()=>onAnswer(v=>{ if(v!=='yes') addReview('labs'); go('commit'); })
+};
+
+SC.commit = { r:()=>`
+  ${hdr({sec:3})}
+  <div class="content fadein">
+    ${guide("Before you join, here's the deal.")}
+    <div class="give">
+      <div class="a"><h3>We'll ask you to</h3><ul><li>Check in daily, about 10 minutes</li><li>Change how you eat</li><li>Stay with it for a year</li></ul></div>
+      <div class="g"><h3>You'll get</h3><ul><li>A doctor and a coach</li><li>Scale and meter</li><li>Meals for shift life</li><li>$0, covered by UPS</li></ul></div>
+    </div>
+    <div class="consents">
+      <button class="check ${S.care?'sel':''}" id="c1"><span class="box"></span><span>I agree to receive care from Virta's medical team.</span></button>
+      <button class="check ${S.priv?'sel':''}" id="c2"><span class="box"></span><span>I've read how Virta protects my health information.</span></button>
+    </div>
+    <p class="hint" style="margin-top:10px">Read the <button class="inl" data-legal="Consent to care">consent to care</button> and <button class="inl" data-legal="Privacy notice">privacy notice</button>.</p>
+    <p class="hint" style="margin-top:12px">In plain words: Virta uses your information to treat you. UPS gets combined results with no names. You can leave anytime.</p>
+  </div>
+  <div class="dock"><button class="btn primary" id="join">Join Virta</button></div>`,
+  b:()=>{
+    const upd=()=>{ $('#join').disabled=!(S.care&&S.priv); };
+    $('#c1').onclick=e=>{ S.care=!S.care; e.currentTarget.classList.toggle('sel',S.care); upd(); };
+    $('#c2').onclick=e=>{ S.priv=!S.priv; e.currentTarget.classList.toggle('sel',S.priv); upd(); };
+    $$('[data-legal]').forEach(a=>a.onclick=()=>{ sheet(`<h3>${a.dataset.legal}</h3><p>The full Legal-approved text appears here, with a plain-language summary at the top of each section.</p><button class="btn primary" data-close>Close</button>`); });
+    upd();
+    $('#join').onclick=()=>loading('Setting up your account…','',()=>show(S.review.length?'review':'eligible'));
+  }
+};
+
+const DAYS=[['Mon','19'],['Tue','20'],['Wed','21'],['Thu','22'],['Fri','23']];
+const TIMES={Morning:['6:30 am','7:00 am','9:30 am'],Afternoon:['1:00 pm','3:30 pm'],Evening:['7:00 pm','8:00 pm','9:30 pm']};
+SC.eligible = { r:()=>`
+  ${hdr({virta:true, noBack:true})}
+  <div class="content fadein">
+    <span class="pill">You're in</span>
+    <h1 class="say">Welcome to Virta, ${esc(S.first||'there')}. Let's book your first visit.</h1>
+    <div class="doc"><div class="av">PS</div><div><b>Dr. Priya Shah, MD</b><span>Your Virta clinician · 30-minute video visit</span></div></div>
+    <div class="days">${DAYS.map((d,i)=>`<button class="day ${S.day===i?'sel':''}" data-day="${i}">${d[0]}<b>${d[1]}</b></button>`).join('')}</div>
+    ${Object.entries(TIMES).map(([g,ts])=>`<div class="tgroup"><h4>${g}</h4><div class="times">${ts.map(t=>`<button class="time ${S.slot===t?'sel':''}" data-time="${t}">${t}</button>`).join('')}</div></div>`).join('')}
+  </div>
+  <div class="dock"><button class="btn primary" id="book">Choose a time</button></div>`,
+  b:()=>{
+    const upd=()=>{ const b=$('#book'); b.disabled=!S.slot; b.textContent=S.slot?`Book ${DAYS[S.day][0]} ${DAYS[S.day][1]}, ${S.slot}`:'Choose a time'; };
+    $$('[data-day]').forEach(d=>d.onclick=()=>{ S.day=+d.dataset.day; $$('[data-day]').forEach(x=>x.classList.toggle('sel',x===d)); upd(); });
+    $$('[data-time]').forEach(t=>t.onclick=()=>{ S.slot=t.dataset.time; $$('[data-time]').forEach(x=>x.classList.toggle('sel',x===t)); upd(); });
+    upd();
+    $('#book').onclick=()=>go('booked');
+  }
+};
+
+SC.booked = { r:()=>`
+  ${hdr({virta:true, noBack:true})}
+  <div class="content fadein">
+    <div class="art go">${I.check}</div>
+    <h1 class="say">You're all set. Here's what happens next.</h1>
+    <ul class="steps">
+      <li class="done">Joined Virta<small>Today</small></li>
+      <li class="now">Your kit ships today<small>Scale and meter, arriving in 3 to 5 days</small></li>
+      <li>Visit with Dr. Shah<small>${DAYS[S.day][0]} ${DAYS[S.day][1]}, ${esc(S.slot||'')}. Have a list of your medicines handy.</small></li>
+      <li>Daily check-ins start<small>Your coach will say hi in the app</small></li>
+    </ul>
+  </div>
+  <div class="dock"><button class="btn primary" id="getApp">Get the Virta app</button><button class="btn quiet" id="cal">Add visit to my calendar</button></div>`,
+  b:()=>{ $('#getApp').onclick=()=>toast('Opens the App Store'); $('#cal').onclick=()=>toast('Added to your calendar'); }
+};
+
+SC.review = { r:()=>{ const labs=S.review.includes('labs'); return `
+  ${hdr({virta:true, noBack:true})}
+  <div class="content fadein">
+    <div class="art wait">${I.clock}</div>
+    <h1 class="say">Almost there. A clinician will review your answers.</h1>
+    <p class="lead" style="margin-top:10px">A few answers need a doctor's look before you start. This is common and usually quick.</p>
+    <ul class="steps">
+      <li class="done">Application received<small>Today</small></li>
+      ${labs?'<li class="now">Get a recent A1c test<small>We\'ll send a free lab order to a lab near you</small></li>':''}
+      <li class="${labs?'':'now'}">Clinician review<small>Usually within 2 business days. We'll text you.</small></li>
+      <li>Book your first visit</li>
+    </ul>
+  </div>
+  <div class="dock">${labs?'<button class="btn primary" id="lab">Get a free lab order</button><button class="btn quiet" id="have">I already have recent results</button>':'<button class="btn primary" id="ok">Got it</button>'}</div>`; },
+  b:()=>{ $('#lab')&&($('#lab').onclick=()=>toast('Lab order sent. Check your texts.')); $('#have')&&($('#have').onclick=()=>toast('You can upload a photo of your results')); $('#ok')&&($('#ok').onclick=()=>toast('We\'ll text you when it\'s done')); }
+};
+
+SC.pregnancy = { r:()=>`
+  ${hdr({virta:true})}
+  <div class="content fadein">
+    <div class="art plum">${I.heart}</div>
+    <h1 class="say">Virta isn't the right fit during pregnancy.</h1>
+    <p class="lead" style="margin-top:10px">Our eating plan isn't recommended while you're pregnant or nursing. Your coverage will still be here when you're ready.</p>
+    <div class="card"><h3>When should we check back in?</h3><p>Your health answers aren't kept.</p>
+      <div class="grid2" style="margin-top:12px">${opt('6','In 6 months','',S.reminder==='6')}${opt('12','In 12 months','',S.reminder==='12')}</div></div>
+    <div class="card outline"><h3>UPS support for you now</h3><p>Maternity support and a 24/7 nurse line through your UPS plan.</p></div>
+  </div>
+  <div class="dock"><button class="btn primary" id="set">Set my reminder</button></div>`,
+  b:()=>{ $$('[data-a]').forEach(b=>b.onclick=()=>{ S.reminder=b.dataset.a; $$('[data-a]').forEach(x=>x.classList.toggle('sel',x===b)); }); $('#set').onclick=()=>toast('Reminder set. Congratulations!'); }
+};
+
+SC.clinical = { r:()=>{ const c={
+    kidney:["Virta isn't safe with advanced kidney disease.","Our eating plan can put extra strain on the kidneys at stage 4 or 5. Your own doctor is the best person to help with blood sugar and weight right now."],
+    dka:["It's safer to start Virta a little later.","Because you were treated for DKA in the past year, we recommend waiting. We can check back in once it's been 12 months."],
+    weight:["Virta isn't the right program for you right now.","Virta is for people with diabetes, prediabetes or a higher weight. If your health changes, you can check again anytime."]
+  }[S.reason||'kidney']; return `
+  ${hdr({virta:true})}
+  <div class="content fadein">
+    <div class="art care">${I.info}</div>
+    <h1 class="say">${c[0]}</h1>
+    <p class="lead" style="margin-top:10px">${c[1]}</p>
+    <div class="card"><h3>Other UPS benefits</h3><p>Your UPS plan includes a nurse line, wellness coaching and an employee assistance program.</p></div>
+    ${S.reason!=='weight'?'<div class="card outline"><h3>Think we got it wrong?</h3><p>A Virta clinician can talk through your situation with you.</p></div>':''}
+  </div>
+  <div class="dock"><button class="btn dark" id="talk">Talk to a person</button></div>`; },
+  b:()=>{ $('#talk').onclick=help; }
+};
+
+SC.age80 = { r:()=>`
+  ${hdr({sec:0})}
+  <div class="content fadein">
+    <div class="art care">${I.info}</div>
+    <h1 class="say">Virta is designed for adults up to age 80.</h1>
+    <p class="lead" style="margin-top:10px">Care for older adults often needs a different approach. Your UPS plan has other support that may fit better.</p>
+    <div class="card"><h3>Other UPS benefits</h3><p>A nurse line, care navigation and wellness coaching through your UPS plan.</p></div>
+  </div>
+  <div class="dock"><button class="btn dark" id="talk">Talk to a person</button></div>`,
+  b:()=>{ $('#talk').onclick=help; }
+};
+
+/* engine: loading screens are transient and never land in history */
+function go(id){ if(cur!==id) hist.push(cur); cur=id; render(); }
+function show(id){ cur=id; render(); }
+function back(){ if(hist.length){ cur=hist.pop(); render(); } }
+function render(){
+  clearInterval(timer); clearTimeout(loadT); closeSheet(); $('#toast').classList.remove('on');
+  const s=SC[cur]; $('#app').innerHTML=s.r();
+  const bk=$('#back'); bk&&(bk.onclick=back);
+  const hp=$('#help'); hp&&(hp.onclick=help);
+  $$('[data-why]').forEach(b=>b.onclick=()=>why(b.dataset.why));
+  s.b&&s.b();
+  const c=$('.content'); c&&(c.scrollTop=0);
+}
+function loading(title, sub, next){
+  hist.push(cur); closeSheet();
+  $('#app').innerHTML=`<div class="loading fadein" role="status"><div class="spin" aria-hidden="true"></div><p>${title}${sub?`<small>${sub}</small>`:''}</p></div>`;
+  loadT=setTimeout(next,1300);
+}
+
+function sheet(html){
+  const sh=$('#sheet'); sh.innerHTML=`<div class="grab"></div>${html}`;
+  sh.classList.add('on'); $('#scrim').classList.add('on');
+  sh.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheet);
+}
+function closeSheet(){ $('#sheet').classList.remove('on'); $('#scrim').classList.remove('on'); }
+$('#scrim').onclick=closeSheet;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
+
+function why(k){
+  const w=WHY[k];
+  sheet(`<h3>${w[0]}</h3><p>${w[1]}</p><div class="who">${I.lock} ${w[2]}</div><button class="btn primary" data-close>Got it</button><button class="btn quiet" id="stillq">I still have a question</button>`);
+  $('#stillq').onclick=()=>{ closeSheet(); setTimeout(help,240); };
+}
+function help(){
+  sheet(`<h3>Talk to a person</h3><p>Real people on the Virta enrollment team, every day from 6am to midnight ET.</p>
+    <div class="hopts">
+      <button data-h="Opening your messages…">Text us<small>Usually answered in a few minutes</small></button>
+      <button data-h="Calling the enrollment team…">Call now<small>About a 2-minute wait</small></button>
+      <button data-h="Pick a time for your callback">Schedule a callback<small>Pick a time after your shift</small></button>
+    </div>
+    <p style="font-size:13.5px">Your progress is saved while you get help.</p>
+    <button class="btn quiet" data-close>Back to my application</button>`);
+  $$('[data-h]').forEach(b=>b.onclick=()=>{ closeSheet(); toast(b.dataset.h); });
+}
+let tt;
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('on'),2200); }
+
+$('#restart').onclick=()=>{ S=fresh(); hist=[]; cur='landing'; render(); };
+render();
+</script>
+
+</body></html>
