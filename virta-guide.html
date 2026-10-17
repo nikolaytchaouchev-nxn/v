@@ -3,8 +3,9 @@
 <!-- Virta Guide, Phase 1 enrollment prototype for the UPS x Virta case study. Edit freely: screens are defined in the SC object in the script below; go(id) navigates. Brand weight per screen lives in BRAND (ups → mix → virta). -->
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* Brand weight shifts across the flow: .screen[data-brand] is ups → mix → virta.
-   Everything themed reads --care / --care-deep / --care-soft, so a screen only picks its stage. */
+/* Brand weight shifts across the flow: .screen[data-brand] is ups → mix → virta, carried by the band,
+   logos and UPS benefit surfaces. Controls and the Virta mark always stay Virta blue; UPS colours only
+   ever dress UPS elements. */
 :root{
   color-scheme:light;
   --blue:#005EE7; --blue-deep:#0046B8; --blue-soft:#E8F0FF; --night:#071331;
@@ -13,14 +14,13 @@
   --line:#E3E7EF; --fill:#F2F4F8; --page:#E9EDF4; --white:#fff;
   --go:#1F8A5B; --go-soft:#E5F5EC; --wait:#A86400; --wait-soft:#FFF3DE;
   --plum:#5B2BC4; --plum-soft:#F2EBFF; --err:#C2410C;
-  --care:var(--blue); --care-deep:var(--blue-deep); --care-soft:var(--blue-soft); --gs-ink:#fff;
+  --care:var(--blue); --care-deep:var(--blue-deep); --care-soft:var(--blue-soft);
 }
-.screen[data-brand=ups]{--care:var(--brown); --care-deep:var(--brown); --care-soft:var(--gold-soft); --gs-ink:var(--gold)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Figtree,system-ui,sans-serif;color:var(--ink);background:var(--page);line-height:1.45}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
-:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:10px}
+:focus-visible{outline:3px solid #5C9BFF;outline-offset:2px;border-radius:10px}
 svg.lg{display:block;flex:none}
 
 .stage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 16px}
@@ -66,8 +66,10 @@ svg.lg{display:block;flex:none}
 
 /* Guide message: speaker + question on top, answers docked in the thumb zone */
 .gm{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-.speaker{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;color:var(--care)}
-.gs{width:34px;height:34px;border-radius:11px;background:var(--care);color:var(--gs-ink);display:grid;place-items:center;flex:none;transition:background .3s}
+.speaker{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;color:var(--blue)}
+/* the Virta mark is always Virta blue, or white on Virta blue: never recoloured by the UPS stage */
+.gs{width:34px;height:34px;border-radius:11px;background:var(--blue);color:#fff;display:grid;place-items:center;flex:none}
+.vchip{display:inline-flex;align-items:center;gap:4px;background:var(--blue);color:#fff;border-radius:8px;padding:4px 7px}
 .say{font-size:29px;line-height:1.06;font-weight:900;letter-spacing:-.03em}
 .say.xl{font-size:38px;line-height:1;letter-spacing:-.035em}
 .lead{font-size:15.5px;color:var(--ink-2)}
@@ -90,8 +92,6 @@ svg.lg{display:block;flex:none}
 .btn.primary{display:flex;align-items:center;justify-content:space-between;text-align:left;background:var(--care);color:#fff;transition:background .3s}
 .btn.primary::after{content:"";width:30px;height:30px;border-radius:10px;flex:none;background:rgba(255,255,255,.18) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7.5 4l6 6-6 6' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/14px}
 .btn.primary:disabled{background:#D3D9E4;cursor:not-allowed}
-.btn.gold{background:var(--gold);color:var(--brown)}
-.btn.gold::after{background:rgba(53,28,11,.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M7.5 4l6 6-6 6' fill='none' stroke='%23351C0B' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/14px}
 .btn.dark{background:var(--ink);color:#fff}
 .btn.quiet{color:var(--care);padding:10px;font-size:15.5px;font-weight:700}
 .fine{font-size:12.5px;color:var(--ink-2);text-align:center}
@@ -108,11 +108,11 @@ svg.lg{display:block;flex:none}
 
 /* landing: UPS-led */
 .land{flex:1;display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden;color:#fff;background:radial-gradient(120% 70% at 85% 8%,#5A3416 0,rgba(90,52,22,0) 60%),linear-gradient(180deg,#2A1507,#1E0F05)}
-.land .sunglow{position:absolute;right:-120px;top:-110px;width:340px;height:340px;color:var(--gold);opacity:.95;filter:drop-shadow(0 0 36px rgba(250,184,10,.45))}
+.land .rings{position:absolute;right:-150px;top:-150px;width:380px;height:380px;border-radius:50%;box-shadow:0 0 0 2px rgba(250,184,10,.35),0 0 0 44px rgba(250,184,10,.07),0 0 0 46px rgba(250,184,10,.22),0 0 0 96px rgba(250,184,10,.05),0 0 0 98px rgba(250,184,10,.14);background:radial-gradient(circle at 40% 60%,#FAB80A 0,#E39A00 45%,#B87500 70%)}
 .land .halo{position:absolute;right:-50px;top:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,226,150,.55),rgba(255,226,150,0) 70%)}
 .land-top{position:relative;display:flex;justify-content:space-between;align-items:center;padding:8px 22px 0}
 .land-top .ups{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;line-height:1.2;color:#E9D6BD}
-.land-top .ups b{display:block;font-size:15px;color:#fff;font-weight:800}
+.land-top .ups b{display:block;font-size:17px;color:#fff;font-weight:800}
 .land .help{color:#fff}
 .land .content{position:relative;padding-top:0;display:flex;flex-direction:column}
 .kicker{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:150px}
@@ -123,7 +123,7 @@ svg.lg{display:block;flex:none}
 .stats div{padding:12px 0 0;font-size:11.5px;color:#CDB89E;font-weight:600;line-height:1.3}
 .stats b{display:block;font-size:22px;color:#fff;font-weight:900;letter-spacing:-.02em}
 .partner{display:flex;align-items:center;gap:8px;margin-top:22px;font-size:12px;font-weight:700;color:#CDB89E}
-.partner span{display:inline-flex;align-items:center;gap:5px;color:#fff}
+.partner .vchip{padding:6px 9px}
 .land .dock{position:relative}
 .land .fine{color:#BFA88D}
 .links{display:flex;justify-content:center;gap:22px}
@@ -167,7 +167,7 @@ svg.lg{display:block;flex:none}
 
 /* blue hero: coverage confirmed and booked */
 .bhero{flex:none;background:linear-gradient(180deg,var(--blue) 0%,#0049C2 100%);color:#fff;padding:0 22px 24px;position:relative;overflow:hidden;text-align:center}
-.bhero .rays{position:absolute;left:50%;top:0;width:400px;height:400px;margin-left:-200px;color:rgba(255,255,255,.08)}
+.bhero .glow{position:absolute;left:50%;top:-160px;width:420px;height:420px;margin-left:-210px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),rgba(255,255,255,0) 65%)}
 .bhero .top{position:relative;display:flex;justify-content:space-between;align-items:center;padding-top:6px}
 .bhero .top .back{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.16);display:grid;place-items:center}
 .bhero .top .back svg{width:16px;height:16px}
@@ -319,13 +319,13 @@ const WHY = {
 };
 
 const band = () => ({
-  ups:`<div class="band ups">${UPS(15)}<span><b>UPS</b> Health Benefits</span><span class="r">with ${SUN(12)} Virta</span></div>`,
-  mix:`<div class="band mix">${UPS(15)}<span class="x">×</span><span class="vw">${SUN(13)}${WORD(32)}</span><span class="r">Your UPS coverage</span></div>`,
-  virta:`<div class="band virta">${VLOCK(14)}<span class="r">${I.lock.replace('<svg','<svg width="13" height="13"')} Private to your care team</span></div>`
+  ups:`<div class="band ups">${UPS(22)}<span style="font-size:13px"><b>UPS</b> Health Benefits</span><span class="r">with <span class="vchip">${SUN(10)}${WORD(24)}</span></span></div>`,
+  mix:`<div class="band mix">${UPS(19)}<span class="x">×</span><span class="vw">${SUN(17)}${WORD(41)}</span><span class="r">Your UPS coverage</span></div>`,
+  virta:`<div class="band virta">${VLOCK(20)}<span class="r" style="color:var(--ink-2)">Covered by ${UPS(11)}</span></div>`
 }[brand()]);
 const hdr = (o={}) => {
   const bk = `<button class="back" id="back" aria-label="Back" ${o.noBack||!hist.length?'hidden':''}>${I.back}</button>`;
-  if (o.virta) return `<div class="hdr">${bk}<div class="mid">${VLOCK(18)}</div><button class="help" id="help">Help</button></div>`;
+  if (o.virta) return `<div class="hdr">${bk}<div class="mid">${VLOCK(24)}</div><button class="help" id="help">Help</button></div>`;
   return `${band()}<div class="hdr">${bk}<div class="mid"><span class="sec">Step ${o.sec+1} of 4 · ${SECTIONS[o.sec]}</span></div><button class="help" id="help">Help</button></div>
     <div class="bar" aria-hidden="true">${SECTIONS.map((_,i)=>`<i class="${i<o.sec?'done':i===o.sec?'on':''}"></i>`).join('')}</div>`;
 };
@@ -352,17 +352,17 @@ const SC = {};
 
 SC.landing = { r:()=>`<div class="land">
   <div class="halo" aria-hidden="true"></div>
-  <svg class="sunglow" aria-hidden="true"><use href="#v-sun"/></svg>
-  <div class="land-top"><div class="ups">${UPS(34)}<div><b>UPS Health Benefits</b>New in your health plan</div></div><button class="help" id="help">Help</button></div>
+  <div class="rings" aria-hidden="true"></div>
+  <div class="land-top"><div class="ups">${UPS(52)}<div><b>UPS Health Benefits</b>New in your health plan</div></div><button class="help" id="help">Help</button></div>
   <div class="content fadein">
     <div class="kicker">A $0 benefit for UPSers</div>
     <h1 class="say xl">Lower your blood sugar. <em>Lose weight.</em></h1>
     <p class="lead">A medical program built around real food, with a doctor and coach on your side. Built for shift life.</p>
     <div class="stats"><div><b>$0</b>with your UPS plan</div><div><b>1:1</b>doctor + coach</div><div><b>Private</b>UPS never sees health info</div></div>
-    <div class="partner">In partnership with <span>${SUN(16)}${WORD(40)}</span></div>
+    <div class="partner">In partnership with <span class="vchip">${SUN(12)}${WORD(30)}</span></div>
   </div>
   <div class="dock">
-    <button class="btn primary gold" id="start">See if I qualify</button>
+    <button class="btn primary" id="start">See if I qualify</button>
     <p class="fine">About 2 minutes. No ID or account needed to check.</p>
     <div class="links"><button id="how">How it works</button><button id="legit">Is this from UPS?</button></div>
   </div></div>`,
@@ -536,7 +536,7 @@ SC.notPlan = { r:()=>`
 
 SC.phone = { r:()=>`
   <div class="bhero">
-    <svg class="rays" aria-hidden="true"><use href="#v-sun"/></svg>
+    <div class="glow" aria-hidden="true"></div>
     <div class="top"><button class="back" id="back" aria-label="Back" ${hist.length?'':'hidden'}>${I.back}</button><button class="help" id="help">Help</button></div>
     ${PAIR(true)}
     <h1 class="say">${S.later?'Thanks':"You're covered"}, ${esc(S.first||'there')}.</h1>
@@ -680,8 +680,8 @@ SC.eligible = { r:()=>`
 
 SC.booked = { r:()=>`
   <div class="bhero">
-    <svg class="rays" aria-hidden="true"><use href="#v-sun"/></svg>
-    <div class="top"><button class="back" hidden aria-label="Back">${I.back}</button><span class="vlock" style="color:#fff">${SUN(18)}${WORD(43)}</span><button class="help" id="help">Help</button></div>
+    <div class="glow" aria-hidden="true"></div>
+    <div class="top"><button class="back" hidden aria-label="Back">${I.back}</button><span class="vlock" style="color:#fff">${SUN(24)}${WORD(58)}</span><button class="help" id="help">Help</button></div>
     <div class="art">${I.check}</div>
     <h1 class="say">You're all set, ${esc(S.first||'there')}.</h1>
     <p>Welcome to Virta. Here's what happens next.</p>
